@@ -1,0 +1,27 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+        <ScoreFunction name="sfxn" weights="beta_nov16" />
+    </SCOREFXNS>
+	<MOVERS>
+        <SwitchChainOrder name="chain1only" chain_order="1" />
+	</MOVERS>
+
+    <RESIDUE_SELECTORS>
+        <Chain name="chainA" chains="A"/>
+    </RESIDUE_SELECTORS>
+
+    <TASKOPERATIONS>
+    </TASKOPERATIONS>
+    <MOVERS>
+    </MOVERS>
+	<FILTERS>
+	</FILTERS>
+    <SIMPLE_METRICS>
+        <SapScoreMetric name="sap_score" score_selector="chainA" />
+    </SIMPLE_METRICS>
+
+	<PROTOCOLS>
+        <Add metrics="sap_score" />
+	</PROTOCOLS>
+	<OUTPUT />
+</ROSETTASCRIPTS>

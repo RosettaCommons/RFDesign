@@ -1,0 +1,152 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+        <ScoreFunction name="sfxn" weights="beta_nov16" />
+    </SCOREFXNS>
+	<MOVERS>
+        <SwitchChainOrder name="chain1only" chain_order="1" />
+
+        <RollMover name="move_chainA_far_away" chain="1" min_angle="0" max_angle="0" axis="x" >
+            <translate x="1000" y="1000" z="1000" /> 
+        </RollMover>
+	</MOVERS>
+
+    <RESIDUE_SELECTORS>
+        <Chain name="chainA" chains="A"/>
+        <Chain name="chainB" chains="B"/>
+        <Neighborhood name="interface_chA" selector="chainB" distance="10.0" />
+        <Neighborhood name="interface_chB" selector="chainA" distance="10.0" />
+        <And name="AB_interface" selectors="interface_chA,interface_chB" />
+        <Not name="Not_interface" selector="AB_interface" />
+        <And name="actual_interface_chA" selectors="AB_interface,chainA" />
+        <And name="actual_interface_chB" selectors="AB_interface,chainB" />
+
+        <ResidueName name="apolar" residue_name3="ALA,CYS,PHE,ILE,LEU,MET,THR,PRO,VAL,TRP,TYR" />
+
+        <And name="apolar_A" selectors="apolar,actual_interface_chA" />
+        <And name="apolar_B" selectors="apolar,actual_interface_chB" />
+        <True name="true_sel"/>
+    </RESIDUE_SELECTORS>
+
+    <TASKOPERATIONS>
+        <ProteinInterfaceDesign name="pack_long" design_chain1="0" design_chain2="0" jump="1" interface_distance_cutoff="15"/>
+    </TASKOPERATIONS>
+    <MOVERS>
+
+        <TaskAwareMinMover name="min" scorefxn="sfxn" bb="0" chi="1" task_operations="pack_long" />
+    </MOVERS>
+	<FILTERS>
+
+		<ResidueCount name="res_count_all" max_residue_count="9999" confidence="0"/>
+
+    	<BuriedSurfaceArea name="buried_npsa_FAMILYVW" select_only_FAMILYVW="True" atom_mode="hydrophobic_atoms" confidence="0.0" />
+    	<BuriedSurfaceArea name="buried_npsa" select_only_FAMILYVW="False" atom_mode="hydrophobic_atoms" confidence="0.0" />
+
+
+		<Sasa name="interface_buried_sasa" confidence="0" />
+		<ExposedHydrophobics name="exposed_hydrophobics"  confidence="0" />
+
+
+		<CalculatorFilter name="buried_npsa_per_res" equation="total_score / res" threshold="-3.2" confidence="0">
+			<Var name="total_score" filter="buried_npsa"/>
+			<Var name="res" filter="res_count_all"/>
+		</CalculatorFilter>
+
+		<CalculatorFilter name="buried_npsa_FAMILYVW_per_res" equation="total_score / res" threshold="-3.2" confidence="0">
+			<Var name="total_score" filter="buried_npsa_FAMILYVW"/>
+			<Var name="res" filter="res_count_all"/>
+		</CalculatorFilter>
+
+
+		<MoveBeforeFilter name="buried_npsa_FAMILYVW_monomer" mover="chain1only" filter="buried_npsa_FAMILYVW" confidence="0" />
+		<MoveBeforeFilter name="buried_npsa_monomer" mover="chain1only" filter="buried_npsa" confidence="0" />
+		<MoveBeforeFilter name="exposed_hydrophobics_monomer" mover="chain1only" filter="exposed_hydrophobics" confidence="0" />
+		<MoveBeforeFilter name="buried_npsa_per_res_monomer" mover="chain1only" filter="buried_npsa_per_res" confidence="0" />
+		<MoveBeforeFilter name="buried_npsa_FAMILYVW_per_res_monomer" mover="chain1only" filter="buried_npsa_FAMILYVW_per_res" confidence="0" />
+
+		<MoveBeforeFilter name="buried_npsa_FAMILYVW_apo" mover="move_chainA_far_away" filter="buried_npsa_FAMILYVW" confidence="0" />
+		<MoveBeforeFilter name="buried_npsa_apo" mover="move_chainA_far_away" filter="buried_npsa" confidence="0" />
+		<MoveBeforeFilter name="exposed_hydrophobics_apo" mover="move_chainA_far_away" filter="exposed_hydrophobics" confidence="0" />
+
+
+		<CalculatorFilter   name="delta_buried_npsa_FAMILYVW" equation="complex - apo" threshold="-3.2" confidence="0">
+			<Var name="complex" filter="buried_npsa_FAMILYVW"/>
+			<Var name="apo"     filter="buried_npsa_FAMILYVW_apo"/>
+		</CalculatorFilter>
+
+		<CalculatorFilter   name="delta_buried_npsa" equation="complex - apo" threshold="-3.2" confidence="0">
+			<Var name="complex" filter="buried_npsa"/>
+			<Var name="apo"     filter="buried_npsa_apo"/>
+		</CalculatorFilter>
+
+		<CalculatorFilter   name="delta_exposed_hydrophobics" equation="complex - apo" threshold="-3.2" confidence="0">
+			<Var name="complex" filter="exposed_hydrophobics"/>
+			<Var name="apo"     filter="exposed_hydrophobics_apo"/>
+		</CalculatorFilter>
+
+
+        <ContactMolecularSurface name="contact_molecular_surface_ap_target" distance_weight="0.5" target_selector="apolar_B" binder_selector="chainA" confidence="0" />
+        <ContactMolecularSurface name="contact_molec_sq5_ap_target" distance_weight="0.5" target_selector="apolar_B" binder_selector="chainA" confidence="0" near_squared_size="5" />
+
+        <ContactMolecularSurface name="contact_molecular_surface_apap_target" distance_weight="0.5" target_selector="apolar_B" binder_selector="chainA" confidence="0" apolar_target="true" />
+        <ContactMolecularSurface name="contact_molec_sq5_apap_target" distance_weight="0.5" target_selector="apolar_B" binder_selector="chainA" confidence="0" near_squared_size="5" apolar_target="true" />
+
+
+
+        <ContactMolecularSurface name="contact_molecular_surface" distance_weight="0.5" target_selector="chainA" binder_selector="chainB" confidence="0" />
+        <ContactMolecularSurface name="contact_molecular_surface_ap_binder" distance_weight="0.5" target_selector="apolar_A" binder_selector="chainB" confidence="0" />
+        <ContactMolecularSurface name="contact_molec_sq5_ap_binder" distance_weight="0.5" target_selector="apolar_A" binder_selector="chainB" confidence="0" near_squared_size="5" />
+
+        <ContactMolecularSurface name="contact_molecular_surface_apap_binder" distance_weight="0.5" target_selector="apolar_A" binder_selector="chainB" confidence="0" apolar_target="true" />
+        <ContactMolecularSurface name="contact_molec_sq5_apap_binder" distance_weight="0.5" target_selector="apolar_A" binder_selector="chainB" confidence="0" near_squared_size="5" apolar_target="true" />
+
+        <BuriedUnsatHbonds name="buns_heavy_ball_1.1D" use_reporter_behavior="true" report_all_heavy_atom_unsats="true" scorefxn="sfxn" residue_selector="AB_interface" ignore_surface_res="false" print_out_info_to_pdb="true" confidence="0" use_ddG_style="true" burial_cutoff="0.01" dalphaball_sasa="true" probe_radius="1.1" max_hbond_energy="1.5" burial_cutoff_apo="0.2" />
+
+        <Ddg name="ddg"  threshold="-10" jump="1" repeats="5" repack="1" relax_mover="min" confidence="0" scorefxn="sfxn" extreme_value_removal="1" />
+
+        <SSPrediction name="pre_mismatch_probability" confidence="0" cmd="/software/psipred4/runpsipred_single" use_probability="1" mismatch_probability="1" use_svm="0" />
+        <MoveBeforeFilter name="mismatch_probability" mover="chain1only" filter="pre_mismatch_probability" confidence="0" />
+
+
+<ShapeComplementarity name="interface_sc" verbose="0" min_sc="0.55" write_int_area="1" write_median_dist="1" jump="1" confidence="0"/>
+	</FILTERS>
+	    <SIMPLE_METRICS>
+
+        <SapScoreMetric name="sap_score" score_selector="chainA" />
+        <SapScoreMetric name="sap_score_target" score_selector="chainB" />
+        <SapScoreMetric name="binder_blocked_sap" score_selector="chainA" sap_calculate_selector="chainA" sasa_selector="true_sel" />
+        <SapScoreMetric name="target_blocked_sap" score_selector="chainB" sap_calculate_selector="chainB" sasa_selector="true_sel" />
+
+    </SIMPLE_METRICS>
+
+	<PROTOCOLS>
+		Add filter="delta_buried_npsa_FAMILYVW" />
+		Add filter="delta_buried_npsa" />
+		Add filter="delta_exposed_hydrophobics" />
+		Add filter="buried_npsa_FAMILYVW_monomer" />
+		Add filter="buried_npsa_monomer" />
+		Add filter="exposed_hydrophobics_monomer" />
+		Add filter="buried_npsa_per_res_monomer" />
+		Add filter="buried_npsa_FAMILYVW_per_res_monomer" />
+
+		<Add filter="contact_molecular_surface_ap_target" />
+		Add filter="contact_molec_sq5_ap_target" />
+		<Add filter="contact_molecular_surface_apap_target" />
+		<Add filter="contact_molec_sq5_apap_target" />
+		Add filter="contact_molecular_surface_ap_binder" />
+		Add filter="contact_molec_sq5_ap_binder" />
+		Add filter="contact_molecular_surface_apap_binder" />
+		Add filter="contact_molec_sq5_apap_binder" />
+
+        <Add filter="interface_sc" />
+        <Add filter="interface_buried_sasa" />
+        <Add filter="contact_molecular_surface" />
+        <Add filter="mismatch_probability" />
+        <Add metrics="sap_score" />
+        <Add metrics="sap_score_target" />
+        <Add metrics="binder_blocked_sap" />
+        <Add metrics="target_blocked_sap" />
+        <Add filter="ddg" />
+        <Add filter="buns_heavy_ball_1.1D" />
+	</PROTOCOLS>
+	<OUTPUT />
+</ROSETTASCRIPTS>

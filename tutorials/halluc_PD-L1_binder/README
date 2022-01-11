@@ -1,0 +1,5 @@
+This tutorial demonstrates using hallucination to scaffold an interface motif
+to generate de novo mimics of PD-1 (to bind PD-L1). Open
+halluc_PD-L1_binder.ipynb in Jupyter to follow along. The commands should all
+run on IPD digs; some modifications to the syntax/paths will probably be needed
+on other systems.

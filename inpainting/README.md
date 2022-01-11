@@ -14,10 +14,10 @@ Remove residues 20-25 from chain A of 2KL8.pdb and rebuild their structure and s
 using 10 iterations of recycling the structure, outputting 1 design to `output/`.
 
     conda activate SE3
-    ./inpaint.py --task hal --checkpoint v02 --pdb=input/2KL8.pdb --out=output/inpaint_test \
-                 --window=A,20,25 --num_designs 1 \
-                 --inf_method=multi_shot --n_iters 10 --recycle_str_mode both \
-                 --clamp_1d 0.1 --dump_all
+    python inpaint.py --task hal --checkpoint v02 --pdb=input/2KL8.pdb --out=output/inpaint_test \
+                      --window=A,20,25 --num_designs 1 \
+                      --inf_method=multi_shot --n_iters 10 --recycle_str_mode both \
+                      --clamp_1d 0.1 --dump_all
 
 The above command should actually run if you start in the working folder `test/` (and run `../inpaint.py`).
 

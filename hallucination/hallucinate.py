@@ -125,8 +125,6 @@ def get_args(argv=None):
     p.add_argument('--w_atr', type=float,    default=-1, help='Weight for ligand attraction loss')
     p.add_argument('--w_set_atr', type=float, default=-1, help='Weight for target attraction loss. Works with contig sets.')
     p.add_argument('--w_rog', type=float,    default=-1, help='Weight for radius of gyration loss')
-    p.add_argument('--w_aspect_ratio', type=float,    default=-1, help='Weight for aspect ratio loss')
-    p.add_argument('--w_cyc_sym', type=float,    default=-1, help='Weight for cyclic sym loss')
     p.add_argument('--w_surfnp', type=float,    default=-1,  help='Weight for surface non-polar loss')
     p.add_argument('--w_nc', type=float,    default=-1,  help='Weight for net charge loss')
     p.add_argument('--w_cce_bg', type=float,    default=-1,  help='Weight for background cce loss')
@@ -531,10 +529,6 @@ def main():
             return loss.calc_lj_atr(lig_dist, args.atr_sigma)
         def rog_loss(net_out):
             return loss.calc_rog(net_out['xyz'][:,i_binder], args.rog_thresh)
-        def asratio_loss(net_out):
-            return loss.calc_aspect_ratio(net_out['xyz'])
-        def cycsym_loss(net_out):
-            return loss.calc_cyclic_sym_deviation(net_out['xyz'],args.num_repeats)
 
         # surface nonpolar
         def surfnp_loss(net_out, nonpolar = 'VILMWF', nbr_thresh = args.surfnp_nbr_thresh):
@@ -587,8 +581,6 @@ def main():
         ml.add('rep',     rep_loss,     weight=args.w_rep)
         ml.add('atr',     atr_loss,     weight=args.w_atr)
         ml.add('rog',     rog_loss,     weight=args.w_rog)
-        ml.add('asratio', asratio_loss, weight=args.w_aspect_ratio)
-        ml.add('cyc',     cycsym_loss,  weight=args.w_cyc_sym) 
         ml.add('surfnp',  surfnp_loss,  weight=args.w_surfnp)
         ml.add('nc',      nc_loss,      weight=args.w_nc)
         ml.add('sym',     rotation_loss,weight=args.w_sym)

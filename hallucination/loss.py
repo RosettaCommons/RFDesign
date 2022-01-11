@@ -5,7 +5,6 @@ import sys, os
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(script_dir+'/util/')
 import geometry
-import transform_decomposition_RF
 
 class AffineTransform(object):
     def __init__(self, xyz1, xyz2):
@@ -681,60 +680,6 @@ def calc_rog(pred_xyz, thresh):
     sq_dist = torch.pow(ca_xyz - ca_xyz.mean(1),2).sum(-1).mean(-1)
     rog = sq_dist.sqrt()
     return F.elu(rog - thresh) + 1
-
-def calc_aspect_ratio(pred_xyz):
-    # This loss adds a geometric term that forces an aspect ratio of 1 (spherical protomers) to prevent extended structures.
-    #pred_xyz: predicted coordinates (B, L, n_atom, 3)
-    ca_xyz = pred_xyz[:,:,1]
-    ca_xyz -= ca_xyz.mean(1)
-    try:
-        s = torch.linalg.svdvals(ca_xyz)[0] 
-    except: #incase we get: The algorithm failed to converge because the input matrix is ill-conditioned or has too many repeated singular values
-        print("adding noise to SVD decomposition")
-        s = torch.linalg.svdvals(ca_xyz+1e-4*ca_xyz.mean(1)*torch.rand(ca_xyz.shape, device=pred_xyz.device))[0]
-    aspect_ratio=s[1] / s[0]
-    score = torch.tensor([1. - aspect_ratio], device=pred_xyz.device)
-    return score
-
-def logistic_rescale(mid, max_val, steep, val):
-        return max_val / (1 + torch.exp(-1 * steep * (val - mid)))
-    
-def calc_cyclic_sym_deviation(pred_xyz,n_repeats):
-    """This loss computes deviation from ideal cyclic.
-        Score rescales it between 0-1, lower is better
-        ####Needs more testing###
-        """
-    s, C, theta, d2, dstar = transform_decomposition_RF.helical_axis_data(pred_xyz, n_repeats)
-    params_dict = {
-            "axis_direction": s,
-            "axis_point": C,
-            "rotation_about": theta,
-            "d2": d2,
-            "dstar": dstar,
-            "rise": torch.dot(d2 / torch.linalg.norm(d2), d2 + dstar),
-        }
-    
-    d_rotation = torch.rad2deg(
-            abs(
-                params_dict["rotation_about"]
-                - (np.pi * 2 / n_repeats)
-            )
-        )
-
-    rescaled_theta = logistic_rescale(4, 1, 1.5, val=d_rotation)
-
-    rescaled_rise = logistic_rescale(
-            2, 1, 2, val=abs(params_dict["rise"])
-        )
-    #print("rescaled_rise:",rescaled_rise,"rescaled_theta:",rescaled_theta)
-    avg_cyclic_sym_deviation= (rescaled_rise + rescaled_theta) / 2
-    avg_cyclic_sym_deviation = torch.unsqueeze(avg_cyclic_sym_deviation, dim=0) #add batch dim
-    
-    #print('avg_cyclic_sym_deviation',avg_cyclic_sym_deviation)
-
-    return avg_cyclic_sym_deviation.to(device=pred_xyz.device)
-
-
 
 
 class MultiLoss:

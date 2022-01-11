@@ -73,3 +73,13 @@ See READMEs in `hallucination/` and `inpainting/` subfolders.
 J. Wang, S. Lisanza, D. Juergens, D. Tischer, et al. Deep learning methods for designing proteins scaffolding functional sites. bioRxiv (2021). [link](https://www.biorxiv.org/content/10.1101/2021.11.10.468128v2)
 
 M. Baek, et al., Accurate prediction of protein structures and interactions using a three-track neural network, Science (2021). [link](https://www.science.org/doi/10.1126/science.abj8754)
+
+An earlier version of our hallucination method can be found at the [trdesign-motif repo](https://github.com/dtischer/trdesign-motif) and published at:
+
+D. Tischer, S. Lisanza, J. Wang, R. Dong, I. Anishchenko, L. F. Milles, S. Ovchinnikov, D. Baker. Design of proteins presenting discontinuous functional sites using deep learning. (2020) bioRxiv [link](https://www.biorxiv.org/content/10.1101/2020.11.29.402743v1)
+
+Our work is based on previous hallucination methods for unconstrained protein generation and fixed-backbone sequence design ([trDesign repo](https://github.com/gjoni/trDesign)):
+
+I Anishchenko, SJ Pellock, TM Chidyausiku, ..., S Ovchinnikov, D Baker. De novo protein design by deep network hallucination. (2021) Nature [link](https://www.nature.com/articles/s41586-021-04184-w)
+
+C Norn, B Wicky, D Juergens, S Liu, D Kim, B Koepnick, I Anishchenko, Foldit Players, D Baker, S Ovchinnikov. Protein sequence design by conformational landscape optimization. (2021) PNAS [link](https://www.pnas.org/content/118/11/e2017228118)

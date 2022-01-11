@@ -20,19 +20,24 @@ All weights for neural networks are released for non-commercial use only under t
 ## Installation
 
 1. Clone the repository:
-
+```
     git clone https://git.ipd.uw.edu/jue/rfdesign.git
     cd rfdesign
+```
 
 2. Create environment and install dependencies:
 
+```
     cd envs
     conda env create -f SE3.yml
+```
 
 3. Download model weights (see license info above).
 
+```
     wget https://files.ipd.uw.edu/pub/rfdesign/weights.tar.gz
     tar xzf weights.tar.gz
+```
 
 4. Configure path to weights. Put a file called config.json in `hallucination/` and
 `inpainting/` with the path to the weights directory. An example file is in each

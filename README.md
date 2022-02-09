@@ -21,7 +21,7 @@ All weights for neural networks are released for non-commercial use only under t
 
 1. Clone the repository:
 ```
-    git clone https://git.ipd.uw.edu/jue/rfdesign.git
+    git clone https://github.com/RosettaCommons/RFDesign.git
     cd rfdesign
 ```
 

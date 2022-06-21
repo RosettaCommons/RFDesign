@@ -13,7 +13,7 @@ for postprocessing and analysis scripts included in `scripts/`.
 
 ## License
 
-All code and neural network weights are released under the MIT license.
+All code and neural network weights are open source under the BSD license.
 
 ## Installation
 

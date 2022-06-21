@@ -13,7 +13,7 @@ for postprocessing and analysis scripts included in `scripts/`.
 
 ## License
 
-All code and neural network weights are open source under the BSD license.
+All code and neural network weights are open source under the BSD license. See `LICENSE`.
 
 ## Installation
 
@@ -85,6 +85,6 @@ C Norn, B Wicky, D Juergens, S Liu, D Kim, B Koepnick, I Anishchenko, Foldit Pla
 
 This repository includes copies of: 
 
-    - [SE3 Transformer implementation from NVIDIA](https://github.com/NVIDIA/DeepLearningExamples/tree/master/DGLPyTorch/DrugDiscovery/SE3Transformer)
-    - [AlphaFold2](https://github.com/deepmind/alphafold)
+ - [SE3 Transformer implementation from NVIDIA](https://github.com/NVIDIA/DeepLearningExamples/tree/master/DGLPyTorch/DrugDiscovery/SE3Transformer)
+ - [AlphaFold2](https://github.com/deepmind/alphafold)
 

@@ -1,43 +1,8 @@
 {   
-    "trunk_tbm_v00":     {"name":         "AF2-inspired 3-track trunk",
-                          "code_path":    "models.trunk_tbm_v00.TrunkModel.TrunkModule", 
-                          "weights_path": "models/trunk_tbm_v00",
-                          "params_path":  "params.json",
-                          "checkpoints":  ["BFF_8_4_384_288_last.pt"],
-                          "visible":      1},
-
-    "trunk_tbm_v01":     {"name":         "AF2-inspired 3-track trunk (2-gpu)",
-                          "code_path":    "models.trunk_tbm_v01.TrunkModel.TrunkModule", 
-                          "weights_path": "models/trunk_tbm_v00",
-                          "params_path":  "params.json",
-                          "checkpoints":  ["BFF_8_4_384_288_last.pt"],
-                          "visible":      0},
-
-    "rf_v00":            {"name":         "RoseTTAFold 3-track trunk + refiner (formerly trunk_e2e_v00)",
-                          "code_path":    "models.rf_v00.TrunkModel.TrunkModule", 
-                          "weights_path": "models/rf_v00",
-                          "params_path":  "params.json",
-                          "checkpoints":  ["RoseTTAFold_rep1.pt"],
-                          "visible":      1},
-
-    "rf_v01":            {"name":         "RoseTTAFold 3-track trunk + refiner (2-gpu) (formerly trunk_e2e_v01)",
-                          "code_path":    "models.rf_v01.TrunkModel.TrunkModule", 
-                          "weights_path": "models/rf_v00",
-                          "params_path":  "params.json",
-                          "checkpoints":  ["RoseTTAFold_rep1.pt"],
-                          "visible":      0},
-
-    "rf_perceiver_v00":  {"name":         "RoseTTAFold w/ Perceiver & FAPE loss (msa_full=zeros)",
-                          "code_path":    "models.rf_perceiver_v00.TrunkModel.TrunkModule", 
-                          "weights_path": "models/rf_perceiver_v00",
-                          "params_path":  "params_v00.json",
-                          "checkpoints":  ["BFF_last.pt"],
-                          "visible":      0},
-
-    "rf_perceiver_v01":  {"name":         "RoseTTAFold w/ Perceiver & FAPE loss (msa_full=msa_latent)",
-                          "code_path":    "models.rf_perceiver_v00.TrunkModel.TrunkModule", 
-                          "weights_path": "models/rf_perceiver_v00",
-                          "params_path":  "params_v01.json",
+    "rf_Nov05_2021":     {"name":         "RoseTTAFold 3-track, Nov. 5 2021",
+                          "code_path":    "models.rf_Nov05_2021.RoseTTAFoldModel.RoseTTAFoldModule", 
+                          "weights_path": "rf_Nov05",
+                          "params_path":  "params_Nov05.json",
                           "checkpoints":  ["BFF_last.pt"],
                           "visible":      1}
-}
+    }

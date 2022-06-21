@@ -1,0 +1,181 @@
+/mnt/home/dzorine/software/homog/homog/homog.py:98: SyntaxWarning: "is" with a literal. Did you mean "=="?
+  if degrees is 'auto': degrees = guess_is_degrees(angle)
+[22:58:04] /opt/dgl/src/runtime/tensordispatch.cc:43: TensorDispatcher: dlopen failed: libtorch_cuda_cpp.so: cannot open shared object file: No such file or directory
+Using backend: pytorch
+--steps was given. Ignoring --grad_steps, --mcmc_steps.
+
+Run settings:
+{'network_name': 'rf_Nov05_2021', 'use_template': None, 'num': 2, 'start_num': 130, 'msa_num': 1, 'out': '/mnt/home/jue/halluc/linear_motifs/output/20220103_sh3_r1/sh3_r1', 'cautious': 1, 'save_pdb': 1, 'save_batch_fas': False, 'track_step': 10, 'track_logits': False, 'out_step': None, 'seed_rng': False, 'steps': 'g600', 'grad_steps': 400, 'mcmc_steps': 0, 'optimizer': 'nsgd', 'drop': 0.2, 'init_sd': 1e-06, 'learning_rate': 0.05, 'grad_check': True, 'logit_scale': 1, 'seq_prob_type': 'hard', 'seq_sample': False, 'calc_bkg': True, 'cce_sd': None, 'hal_sd': None, 'corrupt_sequence': None, 'corrupt_fraction': None, 'pdb': '/mnt/home/jue/halluc/linear_motifs/input/SH3_2w0z.pdb', 'mask': None, 'contigs': 'B7-14', 'con_set_id': None, 'len': '55-100', 'keep_order': False, 'contig_min_gap': 5, 'spike': None, 'spike_fas': None, 'force_aa': 'B7-14', 'exclude_aa': 'C', 'force_aa_hal': None, 'template_pdbs': None, 'no_bkg_mask': False, 'num_repeats': 0, 'init_seq': None, 'masks_bkg': None, 'masks_pass': None, 'force_logits': None, 'receptor': None, 'rec_placement': 'second', 'gap': 200, 'w_cce': 1, 'w_crmsd': -1, 'w_entropy': 1, 'w_kl': -1, 'n_bkg': 100, 'w_rep': 2.0, 'w_set_rep': -1, 'w_atr': -1, 'w_set_atr': -1, 'w_rog': 1.0, 'w_aspect_ratio': -1, 'w_cyc_sym': -1, 'w_surfnp': -1, 'w_nc': -1, 'w_cce_bg': -1, 'w_sym': -1, 'cce_cutoff': 19.9, 'rep_pdb': 'input/SH3_2w0z_rec.pdb', 'rep_sigma': 3.5, 'atr_pdb': None, 'atr_sigma': 5, 'entropy_beta': 10, 'rog_thresh': 16.0, 'surfnp_nbr_thresh': 2.5, 'nc_target': -7, 'entropy_dist_bins': 16, 'mcmc_halflife': 500.0, 'T_acc_0': 0.002, 'mcmc_batch': 1, 'anneal_t1d': False, 'erode_template': False, 'num_masked_tokens': 1, 'weights_dir': '/projects/ml/trDesign', 'nthreads': 4, 'cce_cutstep': None, 'cce_thresh': 2.2, 'batch': 64, 'lr': 0.2, 'nsteps': 100, 'commit': 'c344913efafbbfe8f452574b0c86c348792a5045'}
+
+Loading structure prediction model onto device cuda:0...
+#   trunk_msa_v00     [ens=1]   AF2-inspired 12-block 2-track trunk
+#   trunk_tbm_v00     [ens=1]   AF2-inspired 3-track trunk
+#   rf_v00            [ens=1]   RoseTTAFold 3-track trunk + refiner (formerly trunk_e2e_v00)
+# * rf_Nov05_2021     [ens=1]   RoseTTAFold 3-track, no perceiver, Nov. 5 2021
+#   rf_perceiver_v00  [ens=1]   RoseTTAFold w/ Perceiver & FAPE loss (msa_full=zeros)
+#   rf_perceiver_v01  [ens=1]   RoseTTAFold w/ Perceiver & FAPE loss (msa_full=msa_latent)
+#   af2_v00           [ens=0]   AlphaFold2 (only works with rescue.py)
+Loaded sequence-to-structure model rf_Nov05_2021 with 66037142 parameters
+
+Model hyperparameters:
+{'SE3_param': {'div': 4, 'l0_in_features': 32, 'l0_out_features': 32, 'l1_in_features': 3, 'l1_out_features': 2, 'n_heads': 4, 'num_channels': 32, 'num_degrees': 2, 'num_edge_features': 32, 'num_layers': 3}, 'd_hidden': 32, 'd_hidden_templ': 64, 'd_msa': 256, 'd_msa_full': 64, 'd_pair': 128, 'd_templ': 64, 'n_head_msa': 8, 'n_head_pair': 4, 'n_head_templ': 4, 'n_module_2track': 24, 'n_module_3track': 8, 'p_drop': 0.0}
+
+Using CUDA device(s):  cuda:0: (GeForce RTX 2080); 
+
+Parsing input pdb...
+
+Generating sh3_r1_130, length 67...
+Forcing amino acids:  B7P,B8P,B9P,B10R,B11P,B12P,B13K,B14P
+Loss term           | Weight      
+cce                   1.00
+entropy               1.00
+rep                   2.00
+rog                   1.00
+
+Stage 0
+Starting gradient descent...
+        step    avg loss         cce     entropy         rep         rog
+           0      1.1705      1.7761      2.9079      0.5830      0.0026
+          10      0.9138      1.6252      2.9406      0.0000      0.0032
+          20      0.9609      1.6038      2.7806      0.2089      0.0023
+          30      0.8850      1.6174      2.7772      0.0008      0.0288
+          40      0.7808      1.4636      2.4322      0.0011      0.0062
+          50      0.8233      1.4795      2.4567      0.0875      0.0050
+          60      0.8797      1.5178      2.8689      0.0000      0.0119
+          70      1.7789      1.5373      2.4757      2.4377      0.0058
+          80      1.1444      1.5042      2.6579      0.7762      0.0076
+          90      0.8276      1.4825      2.6384      0.0024      0.0120
+         100      0.8954      1.5463      2.7730      0.0708      0.0162
+         110      0.8298      1.5845      2.5560      0.0018      0.0047
+         120      0.8892      1.5653      2.5472      0.1605      0.0123
+         130      0.7598      1.6212      2.1682      0.0014      0.0066
+         140      0.7290      1.4655      2.1616      0.0042      0.0093
+         150      0.7575      1.4378      2.3429      0.0000      0.0065
+         160      0.8960      1.5217      2.1181      0.4171      0.0058
+         170      0.7274      1.4738      2.1243      0.0163      0.0064
+         180      0.7954      1.7122      2.2589      0.0001      0.0054
+         190      0.7274      1.4939      2.1138      0.0112      0.0066
+         200      0.8028      1.5880      2.4198      0.0001      0.0062
+         210      0.9747      1.5970      2.5139      0.3756      0.0112
+         220      0.7933      1.4674      2.3660      0.0625      0.0081
+         230      0.7416      1.3739      2.3282      0.0001      0.0056
+         240      0.8517      1.5685      2.6871      0.0000      0.0028
+         250      0.7308      1.4353      2.1562      0.0273      0.0076
+         260      0.7625      1.4973      2.3085      0.0000      0.0065
+         270      1.0604      1.6097      2.4559      0.6155      0.0056
+         280      0.7820      1.5797      2.3199      0.0018      0.0067
+         290      0.7740      1.5443      2.3165      0.0002      0.0086
+         300      0.8289      1.6640      2.3935      0.0403      0.0066
+         310      0.8253      1.5387      2.4745      0.0534      0.0066
+         320      1.4219      1.4981      2.7146      1.4451      0.0066
+         330      0.9265      1.6015      2.3398      0.3427      0.0056
+         340      0.8033      1.5567      2.3562      0.0490      0.0055
+         350      0.7774      1.6064      2.2190      0.0280      0.0053
+         360      0.7847      1.6072      2.3098      0.0000      0.0067
+         370      0.8456      1.5690      2.6523      0.0000      0.0070
+         380      0.7769      1.4090      2.4077      0.0311      0.0055
+         390      0.7838      1.4096      2.3165      0.0932      0.0064
+         400      0.8381      1.5551      2.6308      0.0003      0.0041
+         410      0.7627      1.5408      2.2669      0.0000      0.0059
+         420      0.9234      1.6207      2.4421      0.2733      0.0076
+         430      0.7763      1.5508      2.3240      0.0000      0.0070
+         440      0.8120      1.5599      2.4827      0.0000      0.0174
+         450      0.7680      1.4739      2.3156      0.0217      0.0072
+         460      0.8461      1.7118      2.5138      0.0000      0.0048
+         470      0.7858      1.7359      2.1862      0.0007      0.0053
+         480      0.8869      1.5747      2.8269      0.0000      0.0329
+         490      0.9701      1.5160      2.7246      0.0861      0.4376
+         500      0.7807      1.5507      2.2677      0.0398      0.0055
+         510      0.7947      1.4844      2.3528      0.0649      0.0068
+         520      0.7936      1.5928      2.3631      0.0023      0.0078
+         530      0.8069      1.6431      2.3835      0.0000      0.0080
+         540      0.8286      1.5661      2.5721      0.0000      0.0048
+         550      0.7542      1.6881      2.0756      0.0001      0.0074
+         560      0.7784      1.5587      2.3273      0.0000      0.0058
+         570      0.8022      1.5694      2.4355      0.0002      0.0059
+         580      0.7700      1.5377      2.3056      0.0000      0.0065
+         590      0.8263      1.5212      2.6049      0.0001      0.0050
+         600      0.8935      1.5446      2.6171      0.1499      0.0058
+       final      0.7005      1.4323      2.0629      0.0001      0.0074
+best loss step: 157
+Max CUDA memory: 0.9081G
+Saving /mnt/home/jue/halluc/linear_motifs/output/20220103_sh3_r1/sh3_r1_130: npz, fas, trb, trk, trfold pdb
+Finished design /mnt/home/jue/halluc/linear_motifs/output/20220103_sh3_r1/sh3_r1_130 in 12.93 minutes.
+
+Generating sh3_r1_131, length 60...
+Forcing amino acids:  B7P,B8P,B9P,B10R,B11P,B12P,B13K,B14P
+Loss term           | Weight      
+cce                   1.00
+entropy               1.00
+rep                   2.00
+rog                   1.00
+
+Stage 0
+Starting gradient descent...
+        step    avg loss         cce     entropy         rep         rog
+           0      1.0416      1.6340      2.8919      0.1695      0.3431
+          10      0.9546      1.7055      2.9300      0.0178      0.1020
+          20      1.6924      1.7119      2.8505      1.9469      0.0057
+          30      0.9540      1.6852      2.9398      0.0682      0.0085
+          40      1.5079      1.6527      2.8424      1.4763      0.0919
+          50      0.9081      1.6430      2.8793      0.0000      0.0183
+          60      0.9052      1.5930      2.9139      0.0000      0.0189
+          70      0.9141      1.6143      2.8979      0.0000      0.0582
+          80      1.0513      1.5233      2.9173      0.3150      0.1861
+          90      1.5452      1.6638      2.9381      1.5517      0.0207
+         100      0.9095      1.7190      2.7851      0.0000      0.0436
+         110      0.8821      1.5899      2.8026      0.0000      0.0182
+         120      0.9064      1.5473      2.8009      0.0000      0.1840
+         130      1.4881      1.6204      2.7365      0.0000      3.0838
+         140      0.9896      1.5438      2.7333      0.3048      0.0613
+         150      1.6184      1.5666      2.7939      0.0000      3.7316
+         160      0.8650      1.5453      2.6783      0.0465      0.0082
+         170      1.0867      1.5501      2.6824      0.5844      0.0323
+         180      1.0022      1.4715      2.7313      0.3970      0.0141
+         190      1.0320      1.5499      2.7103      0.4421      0.0155
+         200      0.8665      1.5369      2.7370      0.0000      0.0584
+         210      0.8770      1.6370      2.7344      0.0000      0.0135
+         220      0.8914      1.6061      2.6755      0.0000      0.1754
+         230      0.8826      1.5677      2.7863      0.0000      0.0588
+         240      0.8249      1.4978      2.5945      0.0000      0.0325
+         250      0.8237      1.5352      2.5455      0.0000      0.0379
+         260      0.9477      1.4813      2.6565      0.2783      0.0442
+         270      1.8475      1.4884      2.5279      0.0000      5.2211
+         280      0.8429      1.5150      2.6775      0.0006      0.0206
+         290      0.8020      1.4613      2.5176      0.0061      0.0190
+         300      0.7960      1.4990      2.4562      0.0000      0.0250
+         310      0.7870      1.4670      2.4446      0.0000      0.0232
+         320      0.7830      1.5170      2.3753      0.0000      0.0227
+         330      0.7888      1.5482      2.3563      0.0000      0.0392
+         340      0.7793      1.5948      2.2694      0.0000      0.0323
+         350      0.7688      1.6150      2.2038      0.0000      0.0249
+         360      0.7145      1.4453      2.1024      0.0000      0.0245
+         370      0.7031      1.3991      2.0934      0.0002      0.0228
+         380      0.7335      1.4371      2.2038      0.0000      0.0267
+         390      0.7743      1.4821      2.2319      0.0649      0.0278
+         400      0.7406      1.4824      2.1883      0.0000      0.0323
+         410      0.7690      1.5309      2.3013      0.0000      0.0126
+         420      0.7576      1.4527      2.2384      0.0387      0.0198
+         430      0.7752      1.4840      2.2951      0.0342      0.0283
+         440      0.7421      1.4797      2.2036      0.0000      0.0270
+         450      0.8085      1.5763      2.4436      0.0007      0.0213
+         460      0.7822      1.5828      2.3040      0.0000      0.0244
+         470      0.7856      1.4445      2.4472      0.0066      0.0232
+         480      0.7723      1.4082      2.3411      0.0463      0.0197
+         490      0.7540      1.3923      2.3338      0.0108      0.0221
+         500      0.7600      1.5127      2.2673      0.0000      0.0199
+         510      0.7527      1.4915      2.1846      0.0336      0.0204
+         520      0.7546      1.5342      2.2147      0.0000      0.0239
+         530      0.7440      1.4340      2.2655      0.0000      0.0206
+         540      1.2881      1.4883      2.2869      1.3203      0.0248
+         550      0.7636      1.4895      2.3101      0.0000      0.0185
+         560      1.1004      1.5676      2.3660      0.7728      0.0228
+         570      0.7477      1.4287      2.2632      0.0129      0.0210
+         580      0.7704      1.4921      2.3397      0.0001      0.0200
+         590      0.7848      1.4763      2.4337      0.0000      0.0141
+         600      0.7392      1.4367      2.2291      0.0000      0.0303
+       final      0.6821      1.3171      2.0656      0.0000      0.0278
+best loss step: 377
+Max CUDA memory: 0.7834G
+Saving /mnt/home/jue/halluc/linear_motifs/output/20220103_sh3_r1/sh3_r1_131: npz, fas, trb, trk, trfold pdb
+Finished design /mnt/home/jue/halluc/linear_motifs/output/20220103_sh3_r1/sh3_r1_131 in 12.67 minutes.

@@ -13,9 +13,7 @@ for postprocessing and analysis scripts included in `scripts/`.
 
 ## License
 
-All code is released under the MIT license.
-
-All weights for neural networks are released for non-commercial use only under the [Rosetta-DL license](https://files.ipd.uw.edu/pub/RoseTTAFold/Rosetta-DL_LICENSE.txt).
+All code and neural network weights are released under the MIT license.
 
 ## Installation
 
@@ -32,16 +30,23 @@ All weights for neural networks are released for non-commercial use only under t
     conda env create -f SE3.yml
 ```
 
-3. Download model weights (see license info above).
-
+3. Download weights (this step can be skipped if you downloaded the Zenodo version of this repo):
 ```
-    wget https://files.ipd.uw.edu/pub/rfdesign/weights.tar.gz
-    tar xzf weights.tar.gz
+    cd hallucination/weights/rf_Nov05
+    wget http://files.ipd.uw.edu/pub/rfdesign/weights/BFF_last.pt
+
+    cd inpainting/weights/
+    wget http://files.ipd.uw.edu/pub/rfdesign/weights/BFF_mix_epoch25.pt
 ```
 
-4. Configure path to weights. Put a file called config.json in `hallucination/` and
-`inpainting/` with the path to the weights directory. An example file is in each
-folder to copy from.
+4. Run tests
+```
+    cd hallucination/tests/
+    ./run_tests.sh
+
+    cd inpainting/tests/
+    ./run_tests.sh
+```
 
 ### Dependencies
 If you want/need to configure your environment manually, here are the packages in our environment:
@@ -55,14 +60,8 @@ If you want/need to configure your environment manually, here are the packages i
  - packaging
  - pytorch-geometric ([installation instructions](https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html))
  - dgl ([installation instructions](https://www.dgl.ai/pages/start.html))
- - se3-transformer (install from [github](https://github.com/FabianFuchsML/se3-transformer-public))
  - lie_learn
  - icecream (for `inpainting.py`)
-
-### Notes
- - If you are running this on digs at the IPD, you don't need to do steps 3-4.
- - If you are getting output pdbs that are a ball of disconnected segments (as viewed in pymol), this may be due to a problem with the spherical harmonics cached by SE3-transformer. A workaround is to copy the `hallucination/cache/` folder (a correct, clean copy of the cache) to your working directory before running `hallucinate.py` or `inpaint.py`.
-
 
 ## Usage
 
@@ -83,3 +82,9 @@ Our work is based on previous hallucination methods for unconstrained protein ge
 I Anishchenko, SJ Pellock, TM Chidyausiku, ..., S Ovchinnikov, D Baker. De novo protein design by deep network hallucination. (2021) Nature [link](https://www.nature.com/articles/s41586-021-04184-w)
 
 C Norn, B Wicky, D Juergens, S Liu, D Kim, B Koepnick, I Anishchenko, Foldit Players, D Baker, S Ovchinnikov. Protein sequence design by conformational landscape optimization. (2021) PNAS [link](https://www.pnas.org/content/118/11/e2017228118)
+
+This repository includes copies of: 
+
+    - [SE3 Transformer implementation from NVIDIA](https://github.com/NVIDIA/DeepLearningExamples/tree/master/DGLPyTorch/DrugDiscovery/SE3Transformer)
+    - [AlphaFold2](https://github.com/deepmind/alphafold)
+

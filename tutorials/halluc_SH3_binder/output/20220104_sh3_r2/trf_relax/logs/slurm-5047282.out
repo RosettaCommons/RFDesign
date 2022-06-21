@@ -1,0 +1,714 @@
+core.init: Checking for fconfig files in pwd and ./rosetta/flags 
+core.init: Rosetta version: 2021.52+HEAD.fad969a1e80 fad969a1e80536d5dcb37c38f45e65dbb9680b7c git@github.com:RosettaCommons/main.git 2021-12-30T13:40:31
+core.init: command: score_jd2 -l tmp_YkRezgSvc2k4b.list -out:file:silent tmp_iTgREkY64ESZb.silent -out:file:silent_struct_type binary -extra_res_fa /home/bcov/from/jason/H3i.am1bcc.fa.mm.params
+basic.random.init_random_generator: 'RNG device' seed mode, using '/dev/urandom', seed=1843441220 seed_offset=0 real_seed=1843441220
+basic.random.init_random_generator: RandomGenerator:init: Normal mode, seed=1843441220 RG_type=mt19937
+core.init: Resolved executable path: /mnt/net/software/rosetta/versions/v2021.52-dev61819/main/source/build/src/release/linux/5.4/64/x86/gcc/9/hdf5/score_jd2.hdf5.linuxgccrelease
+core.init: Looking for database based on location of executable: /mnt/net/software/rosetta/versions/v2021.52-dev61819/main/database/
+core.scoring.ScoreFunctionFactory: SCOREFUNCTION: ref2015
+core.scoring.etable: Starting energy table calculation
+core.scoring.etable: smooth_etable: changing atr/rep split to bottom of energy well
+core.scoring.etable: smooth_etable: spline smoothing lj etables (maxdis = 6)
+core.scoring.etable: smooth_etable: spline smoothing solvation etables (max_dis = 6)
+core.scoring.etable: Finished calculating energy tables.
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/HBPoly1D.csv
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/HBFadeIntervals.csv
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/HBEval.csv
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/DonStrength.csv
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/AccStrength.csv
+core.chemical.GlobalResidueTypeSet: Finished initializing fa_standard residue type set.  Created 985 residue types
+core.chemical.GlobalResidueTypeSet: Total time to initialize 0.925165 seconds.
+basic.io.database: Database file opened: scoring/score_functions/rama/fd/all.ramaProb
+basic.io.database: Database file opened: scoring/score_functions/rama/fd/prepro.ramaProb
+basic.io.database: Database file opened: scoring/score_functions/omega/omega_ppdep.all.txt
+basic.io.database: Database file opened: scoring/score_functions/omega/omega_ppdep.gly.txt
+basic.io.database: Database file opened: scoring/score_functions/omega/omega_ppdep.pro.txt
+basic.io.database: Database file opened: scoring/score_functions/omega/omega_ppdep.valile.txt
+basic.io.database: Database file opened: scoring/score_functions/P_AA_pp/P_AA
+basic.io.database: Database file opened: scoring/score_functions/P_AA_pp/P_AA_n
+core.scoring.P_AA: shapovalov_lib::shap_p_aa_pp_smooth_level of 1( aka low_smooth ) got activated.
+basic.io.database: Database file opened: scoring/score_functions/P_AA_pp/shapovalov/10deg/kappa131/a20.prop
+protocols.evaluation.ChiWellRmsdEvaluatorCreator: Evaluation Creator active ... 
+protocols.jd2.PDBJobInputter: Instantiate PDBJobInputter
+protocols.jd2.PDBJobInputter: PDBJobInputter::fill_jobs
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_0.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_10.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_11.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_12.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_13.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_14.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_15.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_16.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_17.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_18.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_19.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_1.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_20.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_21.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_22.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_23.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_24.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_25.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_26.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_27.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_28.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_29.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_2.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_30.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_31.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_32.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_33.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_34.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_35.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_36.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_37.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_38.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_39.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_3.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_40.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_41.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_42.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_43.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_44.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_45.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_46.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_47.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_48.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_49.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_4.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_5.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_6.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_7.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_8.pdb nstruct index 1
+protocols.jd2.PDBJobInputter: pushed sh3_r1_85_r2_9.pdb nstruct index 1
+protocols.evaluation.ChiWellRmsdEvaluatorCreator: Evaluation Creator active ... 
+protocols.evaluation.ChiWellRmsdEvaluatorCreator: Evaluation Creator active ... 
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_0.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_0.pdb' automatically determined to be of type PDB
+basic.io.database: Database file opened: scoring/score_functions/elec_cp_reps.dat
+core.scoring.elec.util: Read 40 countpair representative atoms
+core.pack.dunbrack.RotamerLibrary: shapovalov_lib_fixes_enable option is true.
+core.pack.dunbrack.RotamerLibrary: shapovalov_lib::shap_dun10_smooth_level of 1( aka lowest_smooth ) got activated.
+core.pack.dunbrack.RotamerLibrary: Binary rotamer library selected: /mnt/net/software/rosetta/versions/v2021.52-dev61819/main/database/rotamer/shapovalov/StpDwn_0-0-0/Dunbrack10.lib.bin
+core.pack.dunbrack.RotamerLibrary: Using Dunbrack library binary file '/mnt/net/software/rosetta/versions/v2021.52-dev61819/main/database/rotamer/shapovalov/StpDwn_0-0-0/Dunbrack10.lib.bin'.
+core.pack.dunbrack.RotamerLibrary: Dunbrack 2010 library took 0.244945 seconds to load from binary
+protocols.jd2.JobDistributor: sh3_r1_85_r2_0_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_10.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_10.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_10_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_11.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_11.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_11_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_12.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_12.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_12_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_13.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_13.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_13_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_14.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_14.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_14_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_15.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_15.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_15_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_16.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_16.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_16_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_17.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_17.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_17_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_18.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_18.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_18_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_19.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_19.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_19_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_1.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_1.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_1_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_20.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_20.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_20_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_21.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_21.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_21_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_22.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_22.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_22_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_23.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_23.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_23_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_24.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_24.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_24_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_25.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_25.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_25_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_26.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_26.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_26_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_27.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_27.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_27_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_28.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_28.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_28_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_29.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_29.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_29_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_2.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_2.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_2_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_30.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_30.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_30_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_31.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_31.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_31_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_32.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_32.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_32_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_33.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_33.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_33_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_34.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_34.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_34_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_35.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_35.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_35_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_36.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_36.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_36_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_37.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_37.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_37_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_38.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_38.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_38_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_39.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_39.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_39_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_3.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_3.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_3_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_40.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_40.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_40_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_41.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_41.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_41_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_42.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_42.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_42_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_43.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_43.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_43_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_44.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_44.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_44_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_45.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_45.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_45_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_46.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_46.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_46_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_47.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_47.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_47_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_48.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_48.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_48_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_49.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_49.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_49_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_4.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_4.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_4_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_5.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_5.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_5_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_6.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_6.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_6_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_7.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_7.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_7_0001 reported success in 0 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_8.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_8.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_8_0001 reported success in 1 seconds
+protocols.jd2.PDBJobInputter: PDBJobInputter::pose_from_job
+protocols.jd2.PDBJobInputter: filling pose from PDB sh3_r1_85_r2_9.pdb
+core.import_pose.import_pose: File 'sh3_r1_85_r2_9.pdb' automatically determined to be of type PDB
+protocols.jd2.JobDistributor: sh3_r1_85_r2_9_0001 reported success in 0 seconds
+protocols.jd2.JobDistributor: no more batches to process... 
+protocols.jd2.JobDistributor: 50 jobs considered, 50 jobs attempted in 21 seconds
+/home/jue/git/rfdesign/design/scripts/af2_interface_metrics.py:43: UserWarning: Import of 'rosetta' as a top-level module is deprecated and may be removed in 2018, import via 'pyrosetta.rosetta'.
+  from rosetta import *
+WARNING:tensorflow:From /home/nrbennet/software/dl/af2/alphafold/alphafold/model/tf/input_pipeline.py:151: calling map_fn (from tensorflow.python.ops.map_fn) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Use fn_output_signature instead
+WARNING:tensorflow:From /home/nrbennet/software/dl/af2/alphafold/alphafold/model/tf/input_pipeline.py:151: calling map_fn (from tensorflow.python.ops.map_fn) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Use fn_output_signature instead
+core.init: {0} Checking for fconfig files in pwd and ./rosetta/flags 
+core.init: {0} Rosetta version: PyRosetta4.conda.linux.cxx11thread.serialization.CentOS.python39.Release r299 2021.41+release.36da336 36da336f7720aa14359b01b3c40e9709fccb2f65 http://www.pyrosetta.org 2021-10-14T08:23:25
+core.init: {0} command: PyRosetta -in:file:silent_struct_type binary -database /home/jue/.conda/envs/ampere/lib/python3.9/site-packages/pyrosetta/database
+basic.random.init_random_generator: {0} 'RNG device' seed mode, using '/dev/urandom', seed=-2000273786 seed_offset=0 real_seed=-2000273786 thread_index=0
+basic.random.init_random_generator: {0} RandomGenerator:init: Normal mode, seed=-2000273786 RG_type=mt19937
+core.io.silent.SilentFileData: {0} Reading all structures from in.silent
+core.io.silent.SilentFileData: {0} Finished reading 50 structures from in.silent
+core.chemical.GlobalResidueTypeSet: {0} Finished initializing fa_standard residue type set.  Created 983 residue types
+core.chemical.GlobalResidueTypeSet: {0} Total time to initialize 1.26483 seconds.
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatoPyRosetta-4 2021 [Rosetta PyRosetta4.conda.linux.cxx11thread.serialization.CentOS.python39.Release 2021.41+release.36da336f7720aa14359b01b3c40e9709fccb2f65 2021-10-14T08:23:25] retrieved from: http://www.pyrosetta.org
+(C) Copyright Rosetta Commons Member Institutions. Created in JHU by Sergey Lyskov and PyRosetta Team.
+running model_1_ptm
+['sh3_r1_85_r2_0']
+{'plddt_total': 85.71297406949516, 'plddt_binder': 81.23696394230224, 'plddt_target': 91.500918199486, 'pae_interaction1': 11.021985, 'pae_interaction2': 9.194227, 'pae_binder': 5.194377, 'pae_target': 2.6975734, 'pae_interaction': 10.10810661315918, 'time': 248.11127357929945}
+{'plddt_total': 85.71297406949516, 'plddt_binder': 81.23696394230224, 'plddt_target': 91.500918199486, 'pae_interaction1': 11.021985, 'pae_interaction2': 9.194227, 'pae_binder': 5.194377, 'pae_target': 2.6975734, 'pae_interaction': 10.10810661315918, 'time': 248.11127357929945}
+Tag: sh3_r1_85_r2_0 reported success in 248.11127357929945 seconds
+1 predictions made in 248.1122784242034 seconds
+running model_1_ptm
+['sh3_r1_85_r2_10']
+{'plddt_total': 79.91256641710886, 'plddt_binder': 72.09445758310223, 'plddt_target': 90.02218990935881, 'pae_interaction1': 15.503199, 'pae_interaction2': 12.599649, 'pae_binder': 7.302396, 'pae_target': 2.972676, 'pae_interaction': 14.051424026489258, 'time': 6.113938055932522}
+{'plddt_total': 79.91256641710886, 'plddt_binder': 72.09445758310223, 'plddt_target': 90.02218990935881, 'pae_interaction1': 15.503199, 'pae_interaction2': 12.599649, 'pae_binder': 7.302396, 'pae_target': 2.972676, 'pae_interaction': 14.051424026489258, 'time': 6.113938055932522}
+Tag: sh3_r1_85_r2_10 reported success in 6.113938055932522 seconds
+1 predictions made in 6.114592336118221 seconds
+running model_1_ptm
+['sh3_r1_85_r2_11']
+{'plddt_total': 79.31638973898048, 'plddt_binder': 69.75443134479569, 'plddt_target': 91.68099111077113, 'pae_interaction1': 12.934481, 'pae_interaction2': 8.989395, 'pae_binder': 7.0386047, 'pae_target': 2.5648282, 'pae_interaction': 10.96193790435791, 'time': 6.115295194089413}
+{'plddt_total': 79.31638973898048, 'plddt_binder': 69.75443134479569, 'plddt_target': 91.68099111077113, 'pae_interaction1': 12.934481, 'pae_interaction2': 8.989395, 'pae_binder': 7.0386047, 'pae_target': 2.5648282, 'pae_interaction': 10.96193790435791, 'time': 6.115295194089413}
+Tag: sh3_r1_85_r2_11 reported success in 6.115295194089413 seconds
+1 predictions made in 6.115856543183327 seconds
+running model_1_ptm
+['sh3_r1_85_r2_12']
+{'plddt_total': 80.20800242362002, 'plddt_binder': 71.29524435250552, 'plddt_target': 91.73312061902666, 'pae_interaction1': 10.959834, 'pae_interaction2': 7.885836, 'pae_binder': 7.0242076, 'pae_target': 2.6041899, 'pae_interaction': 9.422835350036621, 'time': 6.117089465260506}
+{'plddt_total': 80.20800242362002, 'plddt_binder': 71.29524435250552, 'plddt_target': 91.73312061902666, 'pae_interaction1': 10.959834, 'pae_interaction2': 7.885836, 'pae_binder': 7.0242076, 'pae_target': 2.6041899, 'pae_interaction': 9.422835350036621, 'time': 6.117089465260506}
+Tag: sh3_r1_85_r2_12 reported success in 6.117089465260506 seconds
+1 predictions made in 6.1175898760557175 seconds
+running model_1_ptm
+['sh3_r1_85_r2_13']
+{'plddt_total': 78.54147983229167, 'plddt_binder': 69.44234032036353, 'plddt_target': 90.30760851150912, 'pae_interaction1': 14.353371, 'pae_interaction2': 11.498176, 'pae_binder': 7.591127, 'pae_target': 2.7407186, 'pae_interaction': 12.925773620605469, 'time': 6.035976700484753}
+{'plddt_total': 78.54147983229167, 'plddt_binder': 69.44234032036353, 'plddt_target': 90.30760851150912, 'pae_interaction1': 14.353371, 'pae_interaction2': 11.498176, 'pae_binder': 7.591127, 'pae_target': 2.7407186, 'pae_interaction': 12.925773620605469, 'time': 6.035976700484753}
+Tag: sh3_r1_85_r2_13 reported success in 6.035976700484753 seconds
+1 predictions made in 6.036408267915249 seconds
+running model_1_ptm
+['sh3_r1_85_r2_14']
+{'plddt_total': 77.45891431225347, 'plddt_binder': 67.95022378370055, 'plddt_target': 89.75463482331327, 'pae_interaction1': 19.560581, 'pae_interaction2': 15.789111, 'pae_binder': 11.561084, 'pae_target': 2.964022, 'pae_interaction': 17.674846649169922, 'time': 6.062887646257877}
+{'plddt_total': 77.45891431225347, 'plddt_binder': 67.95022378370055, 'plddt_target': 89.75463482331327, 'pae_interaction1': 19.560581, 'pae_interaction2': 15.789111, 'pae_binder': 11.561084, 'pae_target': 2.964022, 'pae_interaction': 17.674846649169922, 'time': 6.062887646257877}
+Tag: sh3_r1_85_r2_14 reported success in 6.062887646257877 seconds
+1 predictions made in 6.063399620354176 seconds
+running model_1_ptm
+['sh3_r1_85_r2_15']
+{'plddt_total': 79.26823083991479, 'plddt_binder': 71.68941557922938, 'plddt_target': 89.06842298735279, 'pae_interaction1': 12.445812, 'pae_interaction2': 10.070422, 'pae_binder': 6.653776, 'pae_target': 3.1329036, 'pae_interaction': 11.25811767578125, 'time': 6.0468170791864395}
+{'plddt_total': 79.26823083991479, 'plddt_binder': 71.68941557922938, 'plddt_target': 89.06842298735279, 'pae_interaction1': 12.445812, 'pae_interaction2': 10.070422, 'pae_binder': 6.653776, 'pae_target': 3.1329036, 'pae_interaction': 11.25811767578125, 'time': 6.0468170791864395}
+Tag: sh3_r1_85_r2_15 reported success in 6.0468170791864395 seconds
+1 predictions made in 6.047346293926239 seconds
+running model_1_ptm
+['sh3_r1_85_r2_16']
+{'plddt_total': 82.32326035152091, 'plddt_binder': 75.89630258968766, 'plddt_target': 90.63398159527085, 'pae_interaction1': 11.967332, 'pae_interaction2': 9.786284, 'pae_binder': 5.7801385, 'pae_target': 2.7797403, 'pae_interaction': 10.876808166503906, 'time': 6.0842136070132256}
+{'plddt_total': 82.32326035152091, 'plddt_binder': 75.89630258968766, 'plddt_target': 90.63398159527085, 'pae_interaction1': 11.967332, 'pae_interaction2': 9.786284, 'pae_binder': 5.7801385, 'pae_target': 2.7797403, 'pae_interaction': 10.876808166503906, 'time': 6.0842136070132256}
+Tag: sh3_r1_85_r2_16 reported success in 6.0842136070132256 seconds
+1 predictions made in 6.084748409688473 seconds
+running model_1_ptm
+['sh3_r1_85_r2_17']
+{'plddt_total': 78.9075776796534, 'plddt_binder': 70.58253785902703, 'plddt_target': 89.6727153787392, 'pae_interaction1': 12.894799, 'pae_interaction2': 10.511581, 'pae_binder': 7.3629026, 'pae_target': 3.0871422, 'pae_interaction': 11.703189849853516, 'time': 6.142401851713657}
+{'plddt_total': 78.9075776796534, 'plddt_binder': 70.58253785902703, 'plddt_target': 89.6727153787392, 'pae_interaction1': 12.894799, 'pae_interaction2': 10.511581, 'pae_binder': 7.3629026, 'pae_target': 3.0871422, 'pae_interaction': 11.703189849853516, 'time': 6.142401851713657}
+Tag: sh3_r1_85_r2_17 reported success in 6.142401851713657 seconds
+1 predictions made in 6.142985761165619 seconds
+running model_1_ptm
+['sh3_r1_85_r2_18']
+{'plddt_total': 74.1150306190094, 'plddt_binder': 63.57899194960954, 'plddt_target': 87.73921855357821, 'pae_interaction1': 16.021784, 'pae_interaction2': 11.904294, 'pae_binder': 9.034309, 'pae_target': 3.2582016, 'pae_interaction': 13.96303939819336, 'time': 6.1142683029174805}
+{'plddt_total': 74.1150306190094, 'plddt_binder': 63.57899194960954, 'plddt_target': 87.73921855357821, 'pae_interaction1': 16.021784, 'pae_interaction2': 11.904294, 'pae_binder': 9.034309, 'pae_target': 3.2582016, 'pae_interaction': 13.96303939819336, 'time': 6.1142683029174805}
+Tag: sh3_r1_85_r2_18 reported success in 6.1142683029174805 seconds
+1 predictions made in 6.114880092442036 seconds
+running model_1_ptm
+['sh3_r1_85_r2_19']
+{'plddt_total': 84.50689080759335, 'plddt_binder': 80.06841684667384, 'plddt_target': 90.24629679154096, 'pae_interaction1': 12.321028, 'pae_interaction2': 10.5965605, 'pae_binder': 4.8518057, 'pae_target': 2.9731674, 'pae_interaction': 11.458793640136719, 'time': 6.117005154490471}
+{'plddt_total': 84.50689080759335, 'plddt_binder': 80.06841684667384, 'plddt_target': 90.24629679154096, 'pae_interaction1': 12.321028, 'pae_interaction2': 10.5965605, 'pae_binder': 4.8518057, 'pae_target': 2.9731674, 'pae_interaction': 11.458793640136719, 'time': 6.117005154490471}
+Tag: sh3_r1_85_r2_19 reported success in 6.117005154490471 seconds
+1 predictions made in 6.117446519434452 seconds
+running model_1_ptm
+['sh3_r1_85_r2_1']
+{'plddt_total': 78.54991628085489, 'plddt_binder': 69.74466022696953, 'plddt_target': 89.93602324708597, 'pae_interaction1': 14.704407, 'pae_interaction2': 11.262152, 'pae_binder': 7.2275305, 'pae_target': 2.978688, 'pae_interaction': 12.98327922821045, 'time': 6.09813117980957}
+{'plddt_total': 78.54991628085489, 'plddt_binder': 69.74466022696953, 'plddt_target': 89.93602324708597, 'pae_interaction1': 14.704407, 'pae_interaction2': 11.262152, 'pae_binder': 7.2275305, 'pae_target': 2.978688, 'pae_interaction': 12.98327922821045, 'time': 6.09813117980957}
+Tag: sh3_r1_85_r2_1 reported success in 6.09813117980957 seconds
+1 predictions made in 6.098552606999874 seconds
+running model_1_ptm
+['sh3_r1_85_r2_20']
+{'plddt_total': 82.46467717208976, 'plddt_binder': 74.85609100145243, 'plddt_target': 92.3033661858449, 'pae_interaction1': 10.909674, 'pae_interaction2': 7.8974695, 'pae_binder': 6.2661977, 'pae_target': 2.5266085, 'pae_interaction': 9.403572082519531, 'time': 6.049410320818424}
+{'plddt_total': 82.46467717208976, 'plddt_binder': 74.85609100145243, 'plddt_target': 92.3033661858449, 'pae_interaction1': 10.909674, 'pae_interaction2': 7.8974695, 'pae_binder': 6.2661977, 'pae_target': 2.5266085, 'pae_interaction': 9.403572082519531, 'time': 6.049410320818424}
+Tag: sh3_r1_85_r2_20 reported success in 6.049410320818424 seconds
+1 predictions made in 6.049981690943241 seconds
+running model_1_ptm
+['sh3_r1_85_r2_21']
+{'plddt_total': 83.40217362459165, 'plddt_binder': 77.04454584460173, 'plddt_target': 91.62324402975099, 'pae_interaction1': 13.613375, 'pae_interaction2': 11.000212, 'pae_binder': 5.989207, 'pae_target': 2.7334316, 'pae_interaction': 12.306793212890625, 'time': 6.15564937889576}
+{'plddt_total': 83.40217362459165, 'plddt_binder': 77.04454584460173, 'plddt_target': 91.62324402975099, 'pae_interaction1': 13.613375, 'pae_interaction2': 11.000212, 'pae_binder': 5.989207, 'pae_target': 2.7334316, 'pae_interaction': 12.306793212890625, 'time': 6.15564937889576}
+Tag: sh3_r1_85_r2_21 reported success in 6.15564937889576 seconds
+1 predictions made in 6.156170196831226 seconds
+running model_1_ptm
+['sh3_r1_85_r2_22']
+{'plddt_total': 84.12785561214037, 'plddt_binder': 79.5924274469607, 'plddt_target': 89.99263341194167, 'pae_interaction1': 10.496986, 'pae_interaction2': 8.98715, 'pae_binder': 5.395816, 'pae_target': 3.2641997, 'pae_interaction': 9.74206829071045, 'time': 6.106290623545647}
+{'plddt_total': 84.12785561214037, 'plddt_binder': 79.5924274469607, 'plddt_target': 89.99263341194167, 'pae_interaction1': 10.496986, 'pae_interaction2': 8.98715, 'pae_binder': 5.395816, 'pae_target': 3.2641997, 'pae_interaction': 9.74206829071045, 'time': 6.106290623545647}
+Tag: sh3_r1_85_r2_22 reported success in 6.106290623545647 seconds
+1 predictions made in 6.106733500957489 seconds
+running model_1_ptm
+['sh3_r1_85_r2_23']
+{'plddt_total': 78.34939201129609, 'plddt_binder': 68.71923951585454, 'plddt_target': 90.80217541057395, 'pae_interaction1': 14.313678, 'pae_interaction2': 11.348043, 'pae_binder': 7.4544125, 'pae_target': 2.747918, 'pae_interaction': 12.830860137939453, 'time': 6.112148068845272}
+{'plddt_total': 78.34939201129609, 'plddt_binder': 68.71923951585454, 'plddt_target': 90.80217541057395, 'pae_interaction1': 14.313678, 'pae_interaction2': 11.348043, 'pae_binder': 7.4544125, 'pae_target': 2.747918, 'pae_interaction': 12.830860137939453, 'time': 6.112148068845272}
+Tag: sh3_r1_85_r2_23 reported success in 6.112148068845272 seconds
+1 predictions made in 6.112629406154156 seconds
+running model_1_ptm
+['sh3_r1_85_r2_24']
+{'plddt_total': 78.37140202041431, 'plddt_binder': 71.66535744880113, 'plddt_target': 87.04301138025892, 'pae_interaction1': 14.066156, 'pae_interaction2': 11.353765, 'pae_binder': 6.538323, 'pae_target': 3.0459132, 'pae_interaction': 12.7099609375, 'time': 6.092039451003075}
+{'plddt_total': 78.37140202041431, 'plddt_binder': 71.66535744880113, 'plddt_target': 87.04301138025892, 'pae_interaction1': 14.066156, 'pae_interaction2': 11.353765, 'pae_binder': 6.538323, 'pae_target': 3.0459132, 'pae_interaction': 12.7099609375, 'time': 6.092039451003075}
+Tag: sh3_r1_85_r2_24 reported success in 6.092039451003075 seconds
+1 predictions made in 6.092502154409885 seconds
+running model_1_ptm
+['sh3_r1_85_r2_25']
+{'plddt_total': 76.19743922400605, 'plddt_binder': 68.16639402113204, 'plddt_target': 86.58241146910169, 'pae_interaction1': 14.442676, 'pae_interaction2': 12.007321, 'pae_binder': 7.465233, 'pae_target': 3.6771967, 'pae_interaction': 13.224998474121094, 'time': 6.143923811614513}
+{'plddt_total': 76.19743922400605, 'plddt_binder': 68.16639402113204, 'plddt_target': 86.58241146910169, 'pae_interaction1': 14.442676, 'pae_interaction2': 12.007321, 'pae_binder': 7.465233, 'pae_target': 3.6771967, 'pae_interaction': 13.224998474121094, 'time': 6.143923811614513}
+Tag: sh3_r1_85_r2_25 reported success in 6.143923811614513 seconds
+1 predictions made in 6.144436635077 seconds
+running model_1_ptm
+['sh3_r1_85_r2_26']
+{'plddt_total': 75.18357211407216, 'plddt_binder': 61.1288076364126, 'plddt_target': 93.35783652483879, 'pae_interaction1': 26.971987, 'pae_interaction2': 24.322435, 'pae_binder': 10.542436, 'pae_target': 2.7727606, 'pae_interaction': 25.6472110748291, 'time': 6.149973802268505}
+{'plddt_total': 75.18357211407216, 'plddt_binder': 61.1288076364126, 'plddt_target': 93.35783652483879, 'pae_interaction1': 26.971987, 'pae_interaction2': 24.322435, 'pae_binder': 10.542436, 'pae_target': 2.7727606, 'pae_interaction': 25.6472110748291, 'time': 6.149973802268505}
+Tag: sh3_r1_85_r2_26 reported success in 6.149973802268505 seconds
+1 predictions made in 6.150452308356762 seconds
+running model_1_ptm
+['sh3_r1_85_r2_27']
+{'plddt_total': 76.40283325037574, 'plddt_binder': 66.97936905399767, 'plddt_target': 88.58834729741626, 'pae_interaction1': 14.254734, 'pae_interaction2': 10.508716, 'pae_binder': 7.775261, 'pae_target': 3.0866232, 'pae_interaction': 12.381725311279297, 'time': 6.119920015335083}
+{'plddt_total': 76.40283325037574, 'plddt_binder': 66.97936905399767, 'plddt_target': 88.58834729741626, 'pae_interaction1': 14.254734, 'pae_interaction2': 10.508716, 'pae_binder': 7.775261, 'pae_target': 3.0866232, 'pae_interaction': 12.381725311279297, 'time': 6.119920015335083}
+Tag: sh3_r1_85_r2_27 reported success in 6.119920015335083 seconds
+1 predictions made in 6.120446488261223 seconds
+running model_1_ptm
+['sh3_r1_85_r2_28']
+{'plddt_total': 77.19598662324768, 'plddt_binder': 68.06210890785258, 'plddt_target': 89.00703539315512, 'pae_interaction1': 15.790171, 'pae_interaction2': 12.585019, 'pae_binder': 8.08769, 'pae_target': 3.1948774, 'pae_interaction': 14.18759536743164, 'time': 6.145161859691143}
+{'plddt_total': 77.19598662324768, 'plddt_binder': 68.06210890785258, 'plddt_target': 89.00703539315512, 'pae_interaction1': 15.790171, 'pae_interaction2': 12.585019, 'pae_binder': 8.08769, 'pae_target': 3.1948774, 'pae_interaction': 14.18759536743164, 'time': 6.145161859691143}
+Tag: sh3_r1_85_r2_28 reported success in 6.145161859691143 seconds
+1 predictions made in 6.145733118057251 seconds
+running model_1_ptm
+['sh3_r1_85_r2_29']
+{'plddt_total': 77.23912135876313, 'plddt_binder': 67.34610509629994, 'plddt_target': 90.03181480160342, 'pae_interaction1': 14.6496, 'pae_interaction2': 10.832851, 'pae_binder': 7.9122925, 'pae_target': 2.8624196, 'pae_interaction': 12.741226196289062, 'time': 6.128357157111168}
+{'plddt_total': 77.23912135876313, 'plddt_binder': 67.34610509629994, 'plddt_target': 90.03181480160342, 'pae_interaction1': 14.6496, 'pae_interaction2': 10.832851, 'pae_binder': 7.9122925, 'pae_target': 2.8624196, 'pae_interaction': 12.741226196289062, 'time': 6.128357157111168}
+Tag: sh3_r1_85_r2_29 reported success in 6.128357157111168 seconds
+1 predictions made in 6.128980591893196 seconds
+running model_1_ptm
+['sh3_r1_85_r2_2']
+{'plddt_total': 77.06083709951099, 'plddt_binder': 67.94423519097776, 'plddt_target': 88.84954646399359, 'pae_interaction1': 14.868295, 'pae_interaction2': 12.09449, 'pae_binder': 7.5254827, 'pae_target': 3.1370363, 'pae_interaction': 13.481391906738281, 'time': 6.110661908984184}
+{'plddt_total': 77.06083709951099, 'plddt_binder': 67.94423519097776, 'plddt_target': 88.84954646399359, 'pae_interaction1': 14.868295, 'pae_interaction2': 12.09449, 'pae_binder': 7.5254827, 'pae_target': 3.1370363, 'pae_interaction': 13.481391906738281, 'time': 6.110661908984184}
+Tag: sh3_r1_85_r2_2 reported success in 6.110661908984184 seconds
+1 predictions made in 6.1112610176205635 seconds
+running model_1_ptm
+['sh3_r1_85_r2_30']
+{'plddt_total': 76.71466070017873, 'plddt_binder': 66.49609606613097, 'plddt_target': 89.92832186489564, 'pae_interaction1': 14.854589, 'pae_interaction2': 11.135309, 'pae_binder': 8.116529, 'pae_target': 2.8648427, 'pae_interaction': 12.994949340820312, 'time': 6.158058665692806}
+{'plddt_total': 76.71466070017873, 'plddt_binder': 66.49609606613097, 'plddt_target': 89.92832186489564, 'pae_interaction1': 14.854589, 'pae_interaction2': 11.135309, 'pae_binder': 8.116529, 'pae_target': 2.8648427, 'pae_interaction': 12.994949340820312, 'time': 6.158058665692806}
+Tag: sh3_r1_85_r2_30 reported success in 6.158058665692806 seconds
+1 predictions made in 6.158659674227238 seconds
+running model_1_ptm
+['sh3_r1_85_r2_31']
+{'plddt_total': 76.59309409107367, 'plddt_binder': 65.63035973573567, 'plddt_target': 90.7690436884935, 'pae_interaction1': 14.875645, 'pae_interaction2': 11.339167, 'pae_binder': 8.252914, 'pae_target': 2.7571228, 'pae_interaction': 13.107405662536621, 'time': 6.153208844363689}
+{'plddt_total': 76.59309409107367, 'plddt_binder': 65.63035973573567, 'plddt_target': 90.7690436884935, 'pae_interaction1': 14.875645, 'pae_interaction2': 11.339167, 'pae_binder': 8.252914, 'pae_target': 2.7571228, 'pae_interaction': 13.107405662536621, 'time': 6.153208844363689}
+Tag: sh3_r1_85_r2_31 reported success in 6.153208844363689 seconds
+1 predictions made in 6.153663881123066 seconds
+running model_1_ptm
+['sh3_r1_85_r2_32']
+{'plddt_total': 78.83545299989513, 'plddt_binder': 69.82998677201206, 'plddt_target': 90.48045243250255, 'pae_interaction1': 11.715267, 'pae_interaction2': 8.94403, 'pae_binder': 6.947321, 'pae_target': 2.8564882, 'pae_interaction': 10.329648971557617, 'time': 6.144865930080414}
+{'plddt_total': 78.83545299989513, 'plddt_binder': 69.82998677201206, 'plddt_target': 90.48045243250255, 'pae_interaction1': 11.715267, 'pae_interaction2': 8.94403, 'pae_binder': 6.947321, 'pae_target': 2.8564882, 'pae_interaction': 10.329648971557617, 'time': 6.144865930080414}
+Tag: sh3_r1_85_r2_32 reported success in 6.144865930080414 seconds
+1 predictions made in 6.145530097186565 seconds
+running model_1_ptm
+['sh3_r1_85_r2_33']
+{'plddt_total': 77.62565414494003, 'plddt_binder': 67.79753070039166, 'plddt_target': 90.33443446116638, 'pae_interaction1': 14.352597, 'pae_interaction2': 11.092163, 'pae_binder': 8.201729, 'pae_target': 2.9624665, 'pae_interaction': 12.722379684448242, 'time': 6.134808331727982}
+{'plddt_total': 77.62565414494003, 'plddt_binder': 67.79753070039166, 'plddt_target': 90.33443446116638, 'pae_interaction1': 14.352597, 'pae_interaction2': 11.092163, 'pae_binder': 8.201729, 'pae_target': 2.9624665, 'pae_interaction': 12.722379684448242, 'time': 6.134808331727982}
+Tag: sh3_r1_85_r2_33 reported success in 6.134808331727982 seconds
+1 predictions made in 6.135460942983627 seconds
+running model_1_ptm
+['sh3_r1_85_r2_34']
+{'plddt_total': 78.56687556622717, 'plddt_binder': 69.77182213182634, 'plddt_target': 89.93978949002134, 'pae_interaction1': 14.91396, 'pae_interaction2': 12.174398, 'pae_binder': 8.839086, 'pae_target': 2.8513994, 'pae_interaction': 13.544179916381836, 'time': 6.150899223983288}
+{'plddt_total': 78.56687556622717, 'plddt_binder': 69.77182213182634, 'plddt_target': 89.93978949002134, 'pae_interaction1': 14.91396, 'pae_interaction2': 12.174398, 'pae_binder': 8.839086, 'pae_target': 2.8513994, 'pae_interaction': 13.544179916381836, 'time': 6.150899223983288}
+Tag: sh3_r1_85_r2_34 reported success in 6.150899223983288 seconds
+1 predictions made in 6.1513920575380325 seconds
+running model_1_ptm
+['sh3_r1_85_r2_35']
+{'plddt_total': 77.16117079466441, 'plddt_binder': 68.01512378623941, 'plddt_target': 88.98795571935194, 'pae_interaction1': 14.474761, 'pae_interaction2': 11.071411, 'pae_binder': 7.6227527, 'pae_target': 3.070272, 'pae_interaction': 12.773086547851562, 'time': 6.155373252928257}
+{'plddt_total': 77.16117079466441, 'plddt_binder': 68.01512378623941, 'plddt_target': 88.98795571935194, 'pae_interaction1': 14.474761, 'pae_interaction2': 11.071411, 'pae_binder': 7.6227527, 'pae_target': 3.070272, 'pae_interaction': 12.773086547851562, 'time': 6.155373252928257}
+Tag: sh3_r1_85_r2_35 reported success in 6.155373252928257 seconds
+1 predictions made in 6.15590588003397 seconds
+running model_1_ptm
+['sh3_r1_85_r2_36']
+{'plddt_total': 81.89275947472112, 'plddt_binder': 74.56349782404666, 'plddt_target': 91.37025298852426, 'pae_interaction1': 10.688865, 'pae_interaction2': 8.210203, 'pae_binder': 6.2457123, 'pae_target': 2.7604015, 'pae_interaction': 9.449533462524414, 'time': 6.154893174767494}
+{'plddt_total': 81.89275947472112, 'plddt_binder': 74.56349782404666, 'plddt_target': 91.37025298852426, 'pae_interaction1': 10.688865, 'pae_interaction2': 8.210203, 'pae_binder': 6.2457123, 'pae_target': 2.7604015, 'pae_interaction': 9.449533462524414, 'time': 6.154893174767494}
+Tag: sh3_r1_85_r2_36 reported success in 6.154893174767494 seconds
+1 predictions made in 6.155354276299477 seconds
+running model_1_ptm
+['sh3_r1_85_r2_37']
+{'plddt_total': 80.0843405651319, 'plddt_binder': 72.08026710108606, 'plddt_target': 90.43443556174287, 'pae_interaction1': 12.460439, 'pae_interaction2': 9.784992, 'pae_binder': 6.9010444, 'pae_target': 2.9533143, 'pae_interaction': 11.12271499633789, 'time': 6.142486907541752}
+{'plddt_total': 80.0843405651319, 'plddt_binder': 72.08026710108606, 'plddt_target': 90.43443556174287, 'pae_interaction1': 12.460439, 'pae_interaction2': 9.784992, 'pae_binder': 6.9010444, 'pae_target': 2.9533143, 'pae_interaction': 11.12271499633789, 'time': 6.142486907541752}
+Tag: sh3_r1_85_r2_37 reported success in 6.142486907541752 seconds
+1 predictions made in 6.14305092394352 seconds
+running model_1_ptm
+['sh3_r1_85_r2_38']
+{'plddt_total': 85.69385589552516, 'plddt_binder': 81.08314956601436, 'plddt_target': 91.65597614920293, 'pae_interaction1': 9.920397, 'pae_interaction2': 8.422478, 'pae_binder': 4.8800387, 'pae_target': 2.7707052, 'pae_interaction': 9.17143726348877, 'time': 6.124532222747803}
+{'plddt_total': 85.69385589552516, 'plddt_binder': 81.08314956601436, 'plddt_target': 91.65597614920293, 'pae_interaction1': 9.920397, 'pae_interaction2': 8.422478, 'pae_binder': 4.8800387, 'pae_target': 2.7707052, 'pae_interaction': 9.17143726348877, 'time': 6.124532222747803}
+Tag: sh3_r1_85_r2_38 reported success in 6.124532222747803 seconds
+1 predictions made in 6.124980442225933 seconds
+running model_1_ptm
+['sh3_r1_85_r2_39']
+{'plddt_total': 80.42141669521982, 'plddt_binder': 72.9467788553586, 'plddt_target': 90.08689666055761, 'pae_interaction1': 11.417815, 'pae_interaction2': 9.070237, 'pae_binder': 6.628214, 'pae_target': 3.1394122, 'pae_interaction': 10.244026184082031, 'time': 6.1410213857889175}
+{'plddt_total': 80.42141669521982, 'plddt_binder': 72.9467788553586, 'plddt_target': 90.08689666055761, 'pae_interaction1': 11.417815, 'pae_interaction2': 9.070237, 'pae_binder': 6.628214, 'pae_target': 3.1394122, 'pae_interaction': 10.244026184082031, 'time': 6.1410213857889175}
+Tag: sh3_r1_85_r2_39 reported success in 6.1410213857889175 seconds
+1 predictions made in 6.141698502004147 seconds
+running model_1_ptm
+['sh3_r1_85_r2_3']
+{'plddt_total': 82.30767312676593, 'plddt_binder': 77.27784756864338, 'plddt_target': 88.81175790020025, 'pae_interaction1': 10.25572, 'pae_interaction2': 8.993587, 'pae_binder': 5.205281, 'pae_target': 3.3445475, 'pae_interaction': 9.624652862548828, 'time': 6.137603513896465}
+{'plddt_total': 82.30767312676593, 'plddt_binder': 77.27784756864338, 'plddt_target': 88.81175790020025, 'pae_interaction1': 10.25572, 'pae_interaction2': 8.993587, 'pae_binder': 5.205281, 'pae_target': 3.3445475, 'pae_interaction': 9.624652862548828, 'time': 6.137603513896465}
+Tag: sh3_r1_85_r2_3 reported success in 6.137603513896465 seconds
+1 predictions made in 6.138272024691105 seconds
+running model_1_ptm
+['sh3_r1_85_r2_40']
+{'plddt_total': 79.2471506706272, 'plddt_binder': 70.28423407426234, 'plddt_target': 90.83712902799557, 'pae_interaction1': 11.016668, 'pae_interaction2': 7.887052, 'pae_binder': 7.0024776, 'pae_target': 2.7390366, 'pae_interaction': 9.451860427856445, 'time': 6.159162908792496}
+{'plddt_total': 79.2471506706272, 'plddt_binder': 70.28423407426234, 'plddt_target': 90.83712902799557, 'pae_interaction1': 11.016668, 'pae_interaction2': 7.887052, 'pae_binder': 7.0024776, 'pae_target': 2.7390366, 'pae_interaction': 9.451860427856445, 'time': 6.159162908792496}
+Tag: sh3_r1_85_r2_40 reported success in 6.159162908792496 seconds
+1 predictions made in 6.159611560404301 seconds
+running model_1_ptm
+['sh3_r1_85_r2_41']
+{'plddt_total': 77.34618871376642, 'plddt_binder': 67.88543423833079, 'plddt_target': 89.57992294924355, 'pae_interaction1': 19.137835, 'pae_interaction2': 16.239742, 'pae_binder': 7.3741417, 'pae_target': 2.6835256, 'pae_interaction': 17.68878936767578, 'time': 6.121481105685234}
+{'plddt_total': 77.34618871376642, 'plddt_binder': 67.88543423833079, 'plddt_target': 89.57992294924355, 'pae_interaction1': 19.137835, 'pae_interaction2': 16.239742, 'pae_binder': 7.3741417, 'pae_target': 2.6835256, 'pae_interaction': 17.68878936767578, 'time': 6.121481105685234}
+Tag: sh3_r1_85_r2_41 reported success in 6.121481105685234 seconds
+1 predictions made in 6.121916748583317 seconds
+running model_1_ptm
+['sh3_r1_85_r2_42']
+{'plddt_total': 80.25133460327785, 'plddt_binder': 72.69889997545548, 'plddt_target': 90.017413863393, 'pae_interaction1': 12.191153, 'pae_interaction2': 9.821949, 'pae_binder': 7.064886, 'pae_target': 2.8920162, 'pae_interaction': 11.006550788879395, 'time': 6.117462821304798}
+{'plddt_total': 80.25133460327785, 'plddt_binder': 72.69889997545548, 'plddt_target': 90.017413863393, 'pae_interaction1': 12.191153, 'pae_interaction2': 9.821949, 'pae_binder': 7.064886, 'pae_target': 2.8920162, 'pae_interaction': 11.006550788879395, 'time': 6.117462821304798}
+Tag: sh3_r1_85_r2_42 reported success in 6.117462821304798 seconds
+1 predictions made in 6.11807356774807 seconds
+running model_1_ptm
+['sh3_r1_85_r2_43']
+{'plddt_total': 77.44589752673346, 'plddt_binder': 67.04027174763323, 'plddt_target': 90.9014481031562, 'pae_interaction1': 17.700178, 'pae_interaction2': 13.668586, 'pae_binder': 9.209853, 'pae_target': 2.7416515, 'pae_interaction': 15.684381484985352, 'time': 6.114008501172066}
+{'plddt_total': 77.44589752673346, 'plddt_binder': 67.04027174763323, 'plddt_target': 90.9014481031562, 'pae_interaction1': 17.700178, 'pae_interaction2': 13.668586, 'pae_binder': 9.209853, 'pae_target': 2.7416515, 'pae_interaction': 15.684381484985352, 'time': 6.114008501172066}
+Tag: sh3_r1_85_r2_43 reported success in 6.114008501172066 seconds
+1 predictions made in 6.114568032324314 seconds
+running model_1_ptm
+['sh3_r1_85_r2_44']
+{'plddt_total': 74.20348320070507, 'plddt_binder': 60.9309621711807, 'plddt_target': 91.36622591129694, 'pae_interaction1': 17.601242, 'pae_interaction2': 12.521324, 'pae_binder': 9.87785, 'pae_target': 2.5477693, 'pae_interaction': 15.061283111572266, 'time': 6.135008007287979}
+{'plddt_total': 74.20348320070507, 'plddt_binder': 60.9309621711807, 'plddt_target': 91.36622591129694, 'pae_interaction1': 17.601242, 'pae_interaction2': 12.521324, 'pae_binder': 9.87785, 'pae_target': 2.5477693, 'pae_interaction': 15.061283111572266, 'time': 6.135008007287979}
+Tag: sh3_r1_85_r2_44 reported success in 6.135008007287979 seconds
+1 predictions made in 6.1355317533016205 seconds
+running model_1_ptm
+['sh3_r1_85_r2_45']
+{'plddt_total': 78.62947979113011, 'plddt_binder': 69.2557694256099, 'plddt_target': 90.7506569879235, 'pae_interaction1': 13.605, 'pae_interaction2': 10.507886, 'pae_binder': 7.6033626, 'pae_target': 2.8894482, 'pae_interaction': 12.056442260742188, 'time': 6.144537590444088}
+{'plddt_total': 78.62947979113011, 'plddt_binder': 69.2557694256099, 'plddt_target': 90.7506569879235, 'pae_interaction1': 13.605, 'pae_interaction2': 10.507886, 'pae_binder': 7.6033626, 'pae_target': 2.8894482, 'pae_interaction': 12.056442260742188, 'time': 6.144537590444088}
+Tag: sh3_r1_85_r2_45 reported success in 6.144537590444088 seconds
+1 predictions made in 6.145221143960953 seconds
+running model_1_ptm
+['sh3_r1_85_r2_46']
+{'plddt_total': 77.18917686651702, 'plddt_binder': 69.04408383139577, 'plddt_target': 87.72162475676001, 'pae_interaction1': 14.1175995, 'pae_interaction2': 11.941195, 'pae_binder': 7.164482, 'pae_target': 3.453269, 'pae_interaction': 13.029397010803223, 'time': 6.190081626176834}
+{'plddt_total': 77.18917686651702, 'plddt_binder': 69.04408383139577, 'plddt_target': 87.72162475676001, 'pae_interaction1': 14.1175995, 'pae_interaction2': 11.941195, 'pae_binder': 7.164482, 'pae_target': 3.453269, 'pae_interaction': 13.029397010803223, 'time': 6.190081626176834}
+Tag: sh3_r1_85_r2_46 reported success in 6.190081626176834 seconds
+1 predictions made in 6.190706126391888 seconds
+running model_1_ptm
+['sh3_r1_85_r2_47']
+{'plddt_total': 77.95248339734628, 'plddt_binder': 65.16166880960832, 'plddt_target': 94.49232984700745, 'pae_interaction1': 28.362429, 'pae_interaction2': 26.09272, 'pae_binder': 9.570931, 'pae_target': 2.6030664, 'pae_interaction': 27.22757339477539, 'time': 6.162047013640404}
+{'plddt_total': 77.95248339734628, 'plddt_binder': 65.16166880960832, 'plddt_target': 94.49232984700745, 'pae_interaction1': 28.362429, 'pae_interaction2': 26.09272, 'pae_binder': 9.570931, 'pae_target': 2.6030664, 'pae_interaction': 27.22757339477539, 'time': 6.162047013640404}
+Tag: sh3_r1_85_r2_47 reported success in 6.162047013640404 seconds
+1 predictions made in 6.162649258971214 seconds
+running model_1_ptm
+['sh3_r1_85_r2_48']
+{'plddt_total': 73.09087612400725, 'plddt_binder': 61.43902386786707, 'plddt_target': 88.15792645522299, 'pae_interaction1': 17.239159, 'pae_interaction2': 13.173947, 'pae_binder': 9.418677, 'pae_target': 2.780851, 'pae_interaction': 15.206552505493164, 'time': 6.132189817726612}
+{'plddt_total': 73.09087612400725, 'plddt_binder': 61.43902386786707, 'plddt_target': 88.15792645522299, 'pae_interaction1': 17.239159, 'pae_interaction2': 13.173947, 'pae_binder': 9.418677, 'pae_target': 2.780851, 'pae_interaction': 15.206552505493164, 'time': 6.132189817726612}
+Tag: sh3_r1_85_r2_48 reported success in 6.132189817726612 seconds
+1 predictions made in 6.132673561573029 seconds
+running model_1_ptm
+['sh3_r1_85_r2_49']
+{'plddt_total': 74.02393873868931, 'plddt_binder': 61.908085734950205, 'plddt_target': 89.69099003662782, 'pae_interaction1': 17.810978, 'pae_interaction2': 13.409465, 'pae_binder': 9.541226, 'pae_target': 2.80982, 'pae_interaction': 15.610221862792969, 'time': 6.147480316460133}
+{'plddt_total': 74.02393873868931, 'plddt_binder': 61.908085734950205, 'plddt_target': 89.69099003662782, 'pae_interaction1': 17.810978, 'pae_interaction2': 13.409465, 'pae_binder': 9.541226, 'pae_target': 2.80982, 'pae_interaction': 15.610221862792969, 'time': 6.147480316460133}
+Tag: sh3_r1_85_r2_49 reported success in 6.147480316460133 seconds
+1 predictions made in 6.148081831634045 seconds
+running model_1_ptm
+['sh3_r1_85_r2_4']
+{'plddt_total': 79.02818881144431, 'plddt_binder': 70.96273196686676, 'plddt_target': 89.45765886908774, 'pae_interaction1': 14.426472, 'pae_interaction2': 11.53732, 'pae_binder': 7.580458, 'pae_target': 3.1531014, 'pae_interaction': 12.981895446777344, 'time': 6.165517896413803}
+{'plddt_total': 79.02818881144431, 'plddt_binder': 70.96273196686676, 'plddt_target': 89.45765886908774, 'pae_interaction1': 14.426472, 'pae_interaction2': 11.53732, 'pae_binder': 7.580458, 'pae_target': 3.1531014, 'pae_interaction': 12.981895446777344, 'time': 6.165517896413803}
+Tag: sh3_r1_85_r2_4 reported success in 6.165517896413803 seconds
+1 predictions made in 6.166237019002438 seconds
+running model_1_ptm
+['sh3_r1_85_r2_5']
+{'plddt_total': 77.36030617341068, 'plddt_binder': 68.59033977084896, 'plddt_target': 88.70077996982667, 'pae_interaction1': 13.6798115, 'pae_interaction2': 10.95301, 'pae_binder': 7.1892557, 'pae_target': 3.1272504, 'pae_interaction': 12.316410064697266, 'time': 6.160671807825565}
+{'plddt_total': 77.36030617341068, 'plddt_binder': 68.59033977084896, 'plddt_target': 88.70077996982667, 'pae_interaction1': 13.6798115, 'pae_interaction2': 10.95301, 'pae_binder': 7.1892557, 'pae_target': 3.1272504, 'pae_interaction': 12.316410064697266, 'time': 6.160671807825565}
+Tag: sh3_r1_85_r2_5 reported success in 6.160671807825565 seconds
+1 predictions made in 6.1611816212534904 seconds
+running model_1_ptm
+['sh3_r1_85_r2_6']
+{'plddt_total': 81.79207797293365, 'plddt_binder': 75.63974933863749, 'plddt_target': 89.74767534486836, 'pae_interaction1': 11.274437, 'pae_interaction2': 9.225598, 'pae_binder': 5.6473713, 'pae_target': 3.1254418, 'pae_interaction': 10.250017166137695, 'time': 6.15002803504467}
+{'plddt_total': 81.79207797293365, 'plddt_binder': 75.63974933863749, 'plddt_target': 89.74767534486836, 'pae_interaction1': 11.274437, 'pae_interaction2': 9.225598, 'pae_binder': 5.6473713, 'pae_target': 3.1254418, 'pae_interaction': 10.250017166137695, 'time': 6.15002803504467}
+Tag: sh3_r1_85_r2_6 reported success in 6.15002803504467 seconds
+1 predictions made in 6.150492817163467 seconds
+running model_1_ptm
+['sh3_r1_85_r2_7']
+{'plddt_total': 80.83657508038817, 'plddt_binder': 73.15055549827738, 'plddt_target': 90.77539350553145, 'pae_interaction1': 13.128833, 'pae_interaction2': 10.512981, 'pae_binder': 6.496082, 'pae_target': 2.5829086, 'pae_interaction': 11.820907592773438, 'time': 6.123160004615784}
+{'plddt_total': 80.83657508038817, 'plddt_binder': 73.15055549827738, 'plddt_target': 90.77539350553145, 'pae_interaction1': 13.128833, 'pae_interaction2': 10.512981, 'pae_binder': 6.496082, 'pae_target': 2.5829086, 'pae_interaction': 11.820907592773438, 'time': 6.123160004615784}
+Tag: sh3_r1_85_r2_7 reported success in 6.123160004615784 seconds
+1 predictions made in 6.123754538595676 seconds
+running model_1_ptm
+['sh3_r1_85_r2_8']
+{'plddt_total': 85.01287488405168, 'plddt_binder': 81.1898215470345, 'plddt_target': 89.95647833709113, 'pae_interaction1': 10.4197855, 'pae_interaction2': 9.611701, 'pae_binder': 4.5924487, 'pae_target': 2.996672, 'pae_interaction': 10.015743255615234, 'time': 6.132154360413551}
+{'plddt_total': 85.01287488405168, 'plddt_binder': 81.1898215470345, 'plddt_target': 89.95647833709113, 'pae_interaction1': 10.4197855, 'pae_interaction2': 9.611701, 'pae_binder': 4.5924487, 'pae_target': 2.996672, 'pae_interaction': 10.015743255615234, 'time': 6.132154360413551}
+Tag: sh3_r1_85_r2_8 reported success in 6.132154360413551 seconds
+1 predictions made in 6.132700532674789 seconds
+running model_1_ptm
+['sh3_r1_85_r2_9']
+{'plddt_total': 75.38221005918506, 'plddt_binder': 65.14397902385055, 'plddt_target': 88.62130191522104, 'pae_interaction1': 15.264659, 'pae_interaction2': 11.42616, 'pae_binder': 9.114127, 'pae_target': 3.0948617, 'pae_interaction': 13.345409393310547, 'time': 6.135211028158665}
+{'plddt_total': 75.38221005918506, 'plddt_binder': 65.14397902385055, 'plddt_target': 88.62130191522104, 'pae_interaction1': 15.264659, 'pae_interaction2': 11.42616, 'pae_binder': 9.114127, 'pae_target': 3.0948617, 'pae_interaction': 13.345409393310547, 'time': 6.135211028158665}
+Tag: sh3_r1_85_r2_9 reported success in 6.135211028158665 seconds
+1 predictions made in 6.135726772248745 seconds
+done predicting
+m:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133
+core.import_pose.import_pose: {0} File 'temp_af2output.pdb' automatically determined to be of type PDB
+core.conformation.Conformation: {0} [ WARNING ] missing heavyatom:  OXT on residue ASN:CtermProteinFull 133

@@ -56,6 +56,7 @@ def get_args(argv=None):
     p = argparse.ArgumentParser()
     p.add_argument('input_data', help='Folder of TrDesign outputs to process, or a single pdb file')
     p.add_argument('-t','--template', help='Template (natural binder) structure (.pdb)')
+    p.add_argument('--template_dir', help='Template (natural binder) directory')
     # p.add_argument('--sc_rmsd', action='store_true', default=True,
     #     help='Also calculate side-chain RMSD, returning NaN if residues aren\'t matched.')
     p.add_argument('--interface_res',
@@ -258,7 +259,7 @@ def main():
     seqs = []
     names = []
     if os.path.isdir(args.input_data):
-        filenames = glob.glob(os.path.join(args.input_data,'*.pdb'))
+        filenames = sorted(glob.glob(os.path.join(args.input_data,'*.pdb')))
     else:
         filenames = [args.input_data]
 
@@ -354,9 +355,20 @@ def main():
             trb = np.load(trbname,allow_pickle=True)
 
         # load reference structure, if needed
-        if args.template is None and os.path.exists(trbname):
+        if args.template is None and args.template_dir is None and os.path.exists(trbname):
             pdb_ref = parse_pdb(trb['settings']['pdb'])
             xyz_ref = pdb_ref['xyz'][:,:3]
+        if args.template_dir is not None and os.path.exists(trbname):
+            pdb_ref = parse_pdb(args.template_dir+trb['settings']['pdb'].split('/')[-1])
+            xyz_ref = pdb_ref['xyz'][:,:3]
+
+        # recalculate 0-indexed motif residue positions (sometimes they're wrong, e.g. from inpainting)
+        if os.path.exists(trbname):
+        #if os.path.exists(trbname) and 'con_ref_idx0' not in trb:
+            idxmap = dict(zip(pdb_ref['pdb_idx'],range(len(pdb_ref['pdb_idx']))))
+            trb['con_ref_idx0'] = np.array([idxmap[i] for i in trb['con_ref_pdb_idx']])
+            idxmap = dict(zip(pdb_des['pdb_idx'],range(len(pdb_des['pdb_idx']))))
+            trb['con_hal_idx0'] = np.array([idxmap[i] for i in trb['con_hal_pdb_idx']])
 
         # calculate rmsds
         row['rmsd_af2_des'] = calc_rmsd(xyz_pred.reshape(L*3,3), xyz_des.reshape(L*3,3))
@@ -376,14 +388,15 @@ def main():
                                                    xyz_des[idx_motif].reshape(L_motif*3,3))
             row['contig_rmsd_af2'] = calc_rmsd(xyz_pred[idx_motif].reshape(L_motif*3,3), xyz_ref_motif.reshape(L_motif*3,3))
 
-        if args.interface_res is not None:
-            idxmap = dict(zip(trb['con_ref_pdb_idx'],trb['con_ref_idx0']))
-            idx_int_ref = [idxmap[i] for i in interface_res]
-            idxmap2 = dict(zip(trb['con_ref_pdb_idx'],trb['con_hal_idx0']))
-            idx_int_hal = [idxmap2[i] for i in interface_res]
+            if args.interface_res is not None: 
+                idxmap = dict(zip(trb['con_ref_pdb_idx'],trb['con_ref_idx0']))
+                idxmap2 = dict(zip(trb['con_ref_pdb_idx'],trb['con_hal_idx0']))
+                idx_int_ref = [idxmap[i] for i in interface_res if i in trb['con_ref_pdb_idx']]
+                idx_int_hal = [idxmap2[i] for i in interface_res if i in trb['con_ref_pdb_idx']]
+                L_int = len(idx_int_ref)
 
-            row['interface_rmsd_af2'] = calc_rmsd(xyz_pred[idx_int_hal].reshape(L_int*3,3), xyz_ref[idx_int_ref].reshape(L_int*3,3))
-            row['interface_rmsd_af2_des'] = calc_rmsd(xyz_pred[idx_int_hal].reshape(L_int*3,3), xyz_des[idx_int_hal].reshape(L_int*3,3))
+                row['interface_rmsd_af2'] = calc_rmsd(xyz_pred[idx_int_hal].reshape(L_int*3,3), xyz_ref[idx_int_ref].reshape(L_int*3,3))
+                row['interface_rmsd_af2_des'] = calc_rmsd(xyz_pred[idx_int_hal].reshape(L_int*3,3), xyz_des[idx_int_hal].reshape(L_int*3,3))
 
         records.append(row)
 

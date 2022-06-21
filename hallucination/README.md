@@ -138,15 +138,3 @@ Other losses are:
    with any excess rog above the threshold. Typical weight is 1. Typical
    threshold (for proteins 50-100 AAs) is 14-16.
 
-### Neural networks
-
-By default, `hallucinate.py` uses `--network_name rf_perceiver_v01`, which is a
-newer and slightly more-accurate version of RoseTTAFold compared to the
-published network. You can also specify these other networks, although their
-performance is generally worse and therefore they're only useful for comparison
-purposes:
-
- - rf_v00: version of RoseTTAFold from the original Baek et al (2021)
-   publication.
- - trunk_tbm_v00: 3-track RoseTTAFold without SE3-transformer-based refinement
-   blocks. Faster and less accurate than rf_v00.

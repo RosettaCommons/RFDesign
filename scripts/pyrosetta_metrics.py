@@ -159,7 +159,8 @@ def get_rmsd(pose_ref, pose_hal, trb, mode='bb', interface_res=None):
     pdb_idx_hal = [idx for i,idx in enumerate(trb['con_hal_pdb_idx']) if i in i_motif]
     ref_to_hal = dict(zip(pdb_idx_ref, pdb_idx_hal))
     
-    using_consets = 'con_set_id' in trb['settings'] and trb['settings']['con_set_id'] is not None
+    using_consets = 'settings' in trb and 'con_set_id' in trb['settings'] \
+                    and trb['settings']['con_set_id'] is not None
     if using_consets:
         # grab contigs and their sets
         if trb['settings'].get('mask') is not None:

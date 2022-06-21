@@ -1,0 +1,16 @@
+-beta_nov16
+-out:file:score_only score.sc
+-in:file:silent_struct_type binary
+-in:file:silent in.silent
+#-skip_filter_reports # in builds not built by Brian, this is -mute protocols.rosetta_scripts.ParsedProtocol.REPORT
+-holes:dalphaball /net/shared/rosetta_builds/bcov_stable/20-04-27-broken/main/source/external/DAlpahBall/DAlphaBall.gcc
+-ignore_waters false
+-multithreading:total_threads 1
+-mute protocols.rosetta_scripts.ParsedProtocol.REPORT
+-indexed_structure_store:fragment_store /home/bcov/sc/scaffold_comparison/data/ss_grouped_vall_all.h5
+-dunbrack_prob_buried 0.8
+-dunbrack_prob_nonburied 0.8
+-dunbrack_prob_buried_semi 0.8
+-dunbrack_prob_nonburied_semi 0.8
+-script_vars SASA_THRESHOLD=0
+-script_vars patchdock_res=1,2,3

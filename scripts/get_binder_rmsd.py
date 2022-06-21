@@ -17,7 +17,7 @@ import sys, os, argparse, glob
 from collections import OrderedDict
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(script_dir+'/../util/')
+sys.path.append(script_dir+'/../hallucination/util/')
 import parsers
 
 p = argparse.ArgumentParser()

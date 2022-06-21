@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+from icecream import ic
 PARAMS = {
     "DMIN"    : 2.0,
     "DMAX"    : 20.0,
@@ -124,7 +124,7 @@ def xyz_to_c6d(xyz, params=PARAMS):
     mask[b,i,j] = 1.0
     return c6d, mask
     
-def xyz_to_t2d(xyz_t, t0d, params=PARAMS):
+def xyz_to_t2d(xyz_t, params=PARAMS):
     """convert template cartesian coordinates into 2d distance 
     and orientation maps
     
@@ -132,11 +132,10 @@ def xyz_to_t2d(xyz_t, t0d, params=PARAMS):
     ----------
     xyz_t : pytorch tensor of shape [batch,templ,nres,3,3]
             stores Cartesian coordinates of template backbone N,Ca,C atoms
-    t0d:  0-D template features (HHprob, seqID, similarity) [batch, templ, 3]
 
     Returns
     -------
-    t2d : pytorch tensor of shape [batch,nres,nres,37+6+3]
+    t2d : pytorch tensor of shape [batch,nres,nres,37+6+1]
           stores stacked dist,omega,theta,phi 2D maps 
     """
     B, T, L = xyz_t.shape[:3]
@@ -147,9 +146,9 @@ def xyz_to_t2d(xyz_t, t0d, params=PARAMS):
     # dist to one-hot encoded
     dist = dist_to_onehot(c6d[...,0], params)
     orien = torch.cat((torch.sin(c6d[...,1:]), torch.cos(c6d[...,1:])), dim=-1)*mask # (B, T, L, L, 6)
-    t0d = t0d.unsqueeze(2).unsqueeze(3).expand(-1, -1, L, L, -1)
     #
-    t2d = torch.cat((dist, orien, t0d), dim=-1)
+    mask = torch.isnan(c6d[:,:,:,:,0]) # (B, T, L, L)
+    t2d = torch.cat((dist, orien, mask.unsqueeze(-1)), dim=-1)
     t2d[torch.isnan(t2d)] = 0.0
     return t2d
 

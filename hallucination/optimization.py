@@ -12,11 +12,11 @@ from parsers import parse_pdb, parse_a3m
 from trFold import TRFold
 from util import num2aa, write_pdb, aa_1_N, aa_N_1, alphabet_mapping, alpha_1, alphabet_onehot_2_onehot 
 import parsers, geometry, util
-from models.ensemble import EnsembleNet
+from models.ensemble import EnsembleNet  
 
 C6D_KEYS = ['dist','omega','theta','phi']
 
-def get_c6d_dict(out, grad=True):
+def get_c6d_dict(out, grad=True, args=None):
     C6D_KEYS = ['dist','omega','theta','phi']
     if grad:
         logits = [out[key].float() for key in C6D_KEYS]
@@ -46,9 +46,12 @@ def gumbel_st_sample(logits):
     LM_y_seq = (LM_y_seq-LM_y_probs).detach() + LM_y_probs #gumbel trick
     return LM_y_seq
 
-def logits_to_probs(logits, add_gumbel_noise=True, output_type='hard', temp=1, eps=1e-8):
+def logits_to_probs(logits, optimizer, step, steps, add_gumbel_noise=False,
+                     temp=0.5, eps=1e-8, e_soft = 1, p_soft = 0, e_temp=1e-3, 
+                     temp_legacy=1, output_type='soft2hard', learning_rate=0.001):
+    
     '''
-    Conver sequence logits to a probability distribution, which can be soft or hard. Can add noise to the process.
+    Convert sequence logits to a probability distribution, which can be soft,hard, or soft2hard. Can add noise to the process.
     
     Inputs
     ------------
@@ -59,32 +62,37 @@ def logits_to_probs(logits, add_gumbel_noise=True, output_type='hard', temp=1, e
     
     Outputs
     ------------
-    msa (torch.tensor): Soft or one-hot probability distribution
+    msa (torch.tensor): Soft, one-hot, or soft2hard probability distribution
     '''
+    
     device = logits.device
-
+    B, N, L, A = logits.shape
+    
     if add_gumbel_noise:
         U = torch.rand(logits.shape)
         noise = -torch.log(-torch.log(U + eps) + eps)
         noise = noise.to(device)
         logits = logits + noise
-
-    y_soft = torch.nn.functional.softmax(logits/temp, -1)
-
+    
+    y_soft = torch.nn.functional.softmax(logits/temp_legacy, -1)
     if output_type == 'soft':
         msa = y_soft
+        if N == 1:
+            return msa
     elif output_type == 'hard':
         n_cat = y_soft.shape[-1]
         y_oh = torch.nn.functional.one_hot(y_soft.argmax(-1), n_cat)
         y_hard = (y_oh - y_soft).detach() + y_soft
         msa = y_hard
-        
+        if N == 1:
+            return msa
+    
     # if N > 1, shuffle and block gradients from first sequence
-    B, N, L, A = msa.shape
     if N > 1:
         msa = msa[:, torch.randperm(N)]
-        msa = torch.cat([msa[:,:1].detach(), msa[:,1:]], axis=1)
-        
+        msa = torch.cat([msa[:,:1].detach(), msa[:,1:]], axis=1) 
+        return msa
+
     return msa
 
 class NSGD(torch.optim.Optimizer):
@@ -121,7 +129,7 @@ def run_trfold(out, probs, args):
     return xyz
  
 
-def save_result(out_prefix, Net, ml, msa, args, trb, trk=None, net_kwargs={}, loss_inputs={}):
+def save_result(out_prefix, Net, ml, msa, args, trb, trk=None, net_kwargs={}, loss_inputs={}, msa_one_hot=None ):
     print(f'Saving {out_prefix}: ',end='')
 
     B,N,L = msa.shape
@@ -129,12 +137,18 @@ def save_result(out_prefix, Net, ml, msa, args, trb, trk=None, net_kwargs={}, lo
     
     device = next(Net.parameters()).device
     Net.eval()
+    if hasattr(Net,'sample'): #to ensure when summing OF models, you don't get average 3D coordinates 
+        Net.sample=True
     with torch.no_grad():
         msa_ = torch.tensor(msa).long().to(device)
-        msa_1h = F.one_hot(msa_, 21).float()
+        if msa_one_hot is not None:
+            msa_1h = msa_one_hot
+        else:
+            msa_1h = F.one_hot(msa_, 21).float()
         out = Net(msa_, msa_one_hot=msa_1h, **net_kwargs)
         dict_pred, probs = get_c6d_dict(out, grad=False)
-        net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None), 'msa_one_hot':msa_1h}
+        net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None), 'msa_one_hot':msa_1h, 
+                   'lddt': out.get('lddt', None),'alpha': out.get('alpha', None)}
         net_out.update(loss_inputs)
         E_0 = ml.score(net_out)
         E_0 = E_0.cpu().numpy()
@@ -184,13 +198,14 @@ def save_result(out_prefix, Net, ml, msa, args, trb, trk=None, net_kwargs={}, lo
       for k,v in dict_pred_out.items():
           dict_pred_out[k] = v[:,map_chB_last[:,None], map_chB_last[None,:]]
  
-    print('npz',end='')
-    np.savez(out_prefix+'.npz',
-        dist=dict_pred_out['p_dist'][0],
-        omega=dict_pred_out['p_omega'][0],
-        theta=dict_pred_out['p_theta'][0],
-        phi=dict_pred_out['p_phi'][0],
-        mask=trb['mask_contig'])
+    if args.save_npz:
+        print('npz',end='')
+        np.savez(out_prefix+'.npz',
+            dist=dict_pred_out['p_dist'][0],
+            omega=dict_pred_out['p_omega'][0],
+            theta=dict_pred_out['p_theta'][0],
+            phi=dict_pred_out['p_phi'][0],
+            mask=trb['mask_contig'])
    
     # save sequence from best batch
     print(', fas',end='')
@@ -219,8 +234,10 @@ def save_result(out_prefix, Net, ml, msa, args, trb, trk=None, net_kwargs={}, lo
     # Save pdb
     if args.save_pdb and 'xyz' in out:
         print(', trfold pdb',end='')
-        xyz = run_trfold(out, probs, args)
-       
+        xyz = run_trfold(out, probs, args).permute(1,0,2)
+        Bfacts = None
+        sc = False
+               
         # write file
         comments = ['##### Meta data #####']
         comments += [f'{k}: {v}' for k, v in args.__dict__.items()]
@@ -230,8 +247,6 @@ def save_result(out_prefix, Net, ml, msa, args, trb, trk=None, net_kwargs={}, lo
                                                 'con_hal_pdb_idx',
                                                 'sampled_mask']]
 
-        #comments += [f'{k}: {v}' for k, v in mappings.items()]
-        
         if '/' in seqs_fasta[0]:
             chain_break = seqs_fasta[0].index('/')
             pdb_idx = [('A',i) for i in range(1,chain_break+1)] + \
@@ -239,13 +254,16 @@ def save_result(out_prefix, Net, ml, msa, args, trb, trk=None, net_kwargs={}, lo
         else:
             pdb_idx = [('A',i) for i in range(1,L+1)]
 
-        write_pdb(xyz=xyz.permute(1,0,2).detach().cpu().numpy(), 
+        write_pdb(xyz=xyz.detach().cpu().numpy(), #.permute(1,0,2)
                   prefix=out_prefix,
                   res=seqs_fasta[0].replace('/',''),
                   pdb_idx=pdb_idx,
+                  Bfacts = Bfacts,
+                  sc = sc,
                   comments=comments)             
 
     print() # newline
+    
 
 def load_structure_predictor(include_dir, args, device):
     def import_method(path_str):
@@ -259,6 +277,7 @@ def load_structure_predictor(include_dir, args, device):
 
     print(f'Loading structure prediction model onto device {device}...')
     reg_models = json.load(open(include_dir+"/models/models.json"))
+    
     for k,v in reg_models.items():
         flag = '*' if k==args.network_name else ' '
         if k==args.network_name or v['visible']:
@@ -269,34 +288,13 @@ def load_structure_predictor(include_dir, args, device):
     NetClass = import_method(sel['code_path'])
 
     net_params = json.load(open(args.weights_dir+'/'+sel['weights_path']+'/'+sel['params_path']))
+    Net = NetClass(**net_params)
+    weights = torch.load(chks[0],map_location=torch.device(device))
+    if 'model_state_dict' in weights.keys():
+        weights = weights['model_state_dict']
+    Net.load_state_dict(weights, strict=False)
 
-    # command-line modifications to model params
-    if 'drop' in args:
-        if 'trr2' in args.network_name:
-            net_params['dropout'] = args.drop
-        elif 'trunk' in args.network_name:
-            net_params['p_drop'] = args.drop
-
-    # model parallelism
-    if args.network_name == 'trunk_tbm_v01' or args.network_name == 'trunk_e2e_v01' or args.network_name =='rf_v01':
-        device1 = 1 if torch.cuda.device_count() > 1 else 0
-        net_params['device0'] = device
-        net_params['device1'] = device1
-
-    if 'af2' in args.network_name:
-        Net = NetClass(**net_params)
-    elif len(chks)>1:
-        Net = EnsembleNet(NetClass, net_params, chks)
-    else:
-        Net = NetClass(**net_params)
-        weights = torch.load(chks[0],map_location=torch.device(device))
-        if 'model_state_dict' in weights.keys():
-            weights = weights['model_state_dict']
-        Net.load_state_dict(weights, strict=False)
-
-    if args.network_name not in ['trunk_tbm_v01','trunk_e2e_v01','rf_v01',
-                                 'rf_perceiver_v00','rf_perceiver_v01','af2_v00']:
-        Net = Net.to(device)
+    Net = Net.to(device)
     Net.eval()
     for p in Net.parameters(): p.requires_grad = False        
     
@@ -366,18 +364,13 @@ def add_gumbel_noise(seq, p, eps=1e-8):
     return logits_noised
 
 
-def initialize_logits(args, mappings, L, device, B=1, pdb=None):
+def initialize_logits(args, mappings, L, device, B=1, pdb=None,init_zeroes=False):
     '''
     Note: These options are not necessarily mutually exclusive!
     '''
     N = args.msa_num
-
-    if args.force_logits:
-        # Force logits
-        print('Initializing logits: Force')
-        input_logits = torch.load(args.force_logits, map_location=torch.device(device))
-        
-    elif (args.cce_sd is not None) and (args.hal_sd is not None):
+   
+    if (args.cce_sd is not None) and (args.hal_sd is not None):
         # Initialize logits for the cce and free hallucination regions with different init_sd
         m_cce = mappings['mask_1d'][0].astype(bool)
         m_cce = torch.tensor(m_cce)
@@ -392,22 +385,11 @@ def initialize_logits(args, mappings, L, device, B=1, pdb=None):
         
         # Make gaps very unlikely
         input_logits[...,20] = -1e9
-
-    elif (args.corrupt_sequence is not None) and (args.corrupt_fraction is not None):
-        # Load the sequence
-        if args.corrupt_sequence[-4:] == '.fas':
-            with open(args.corrupt_sequence, 'r') as f_in:
-                name = f_in.readline().strip()[1:]
-                seq = f_in.readline().strip()
-        elif args.corrupt_sequence[-4:] == '.pdb':
-            seq = parsers.parse_pdb(args.corrupt_sequence)['seq']
-            seq = util.N_to_AA(seq)[0]
-        else:
-            seq = args.corrupt_sequence
-                
-        # Corrupt
-        input_logits = add_gumbel_noise(seq, p=1-args.corrupt_fraction)    
                    
+    elif init_zeroes==True:
+        print("init zeroes")
+        input_logits=torch.zeros(B,N,L,21).to(device).float()
+        input_logits[...,20] = -1e9 # avoid gaps
     else:
         # Random initialization
         input_logits = args.init_sd*torch.randn([B,N,L,21]).to(device).float()
@@ -450,9 +432,6 @@ def initialize_logits(args, mappings, L, device, B=1, pdb=None):
         p = torch.tensor(args.spike, dtype=torch.float32)
         g = torch.log(p) - torch.log(1 - p) + torch.log(n_cat.float() - 1.)  # desired gap in logit magnitude
         seq_init *= g
-    
-        #3. mask out non-contig regions
-        #seq_init *= torch.tensor(mappings['mask_1d'][0])[None,None,:,None]
         
         #4. Extend to an MSA  (spiking only really makes sense if 1 seqeunce in the MSA)
         update = torch.tensor( #[N,L,20]
@@ -526,6 +505,25 @@ def force_msa(msa, alphabet, force_aa=None, exclude_aa=None, weight=1e8):
     msa = msa + weight * bias
     
     return msa
+
+def stop_early(args,trb,step):
+    if args.cce_cutstep is not None and step == args.cce_cutstep:
+        if trb['loss_cce'] > args.cce_thresh:
+            print(f"CCE loss: {trb['loss_cce']} of best total loss below cutoff of {args.cce_thresh} at step {step} so terminating early")
+            return True
+    if args.rep_cutstep is not None and step == args.rep_cutstep:
+        if trb['loss_rep'] > args.rep_thresh:
+            print(f"rep loss: {trb['loss_rep']} of best total loss below cutoff of {args.rep_thresh} at step {step} so terminating early")
+            return True
+    if args.entropy_cutstep is not None and step == args.entropy_cutstep:
+        if trb['loss_entropy'] > args.entropy_thresh:
+            print(f"entropy loss: {trb['loss_entropy']} of best total loss below cutoff of {args.entropy_thresh} at step {step} so terminating early")
+            return True
+    if args.int_entropy_cutstep is not None and step == args.int_entropy_cutstep:
+        if trb['loss_int_entropy'] > args.int_entropy_thresh:
+            print(f"int_entropy loss: {trb['loss_int_entropy']} of best total loss below cutoff of {args.int_entropy_thresh} at step {step} so terminating early")
+            return True
+    
        
 
 def gradient_descent(steps, Net, ml, input_logits, args, trb, trk, net_kwargs={}):
@@ -561,6 +559,13 @@ def gradient_descent(steps, Net, ml, input_logits, args, trb, trk, net_kwargs={}
         force_aa = [aa_1_N[x[-1].upper()] for x in args.force_aa.split(',')]
     else:
         idx_force, force_aa = [], []
+   
+    if args.force_aa_hal is not None:
+        idx0_hal, aa_s = [], [] 
+        idx0_hal = idx0_hal + [int(x[1:-1])-1 for x in args.force_aa_hal.split(',')]
+        aa_s = aa_s + [aa_1_N[x[-1].upper()] for x in args.force_aa_hal.split(',')]
+        idx_force.extend(idx0_hal)
+        force_aa.extend(aa_s)
 
     # prepare optimizer
     input_logits = torch.tensor(input_logits).to(device).requires_grad_(True)
@@ -575,10 +580,8 @@ def gradient_descent(steps, Net, ml, input_logits, args, trb, trk, net_kwargs={}
     for step in range(steps+1): # 1 extra iteration to compute final outputs
         optimizer.zero_grad()
         
-        if args.cce_cutstep is not None and step == args.cce_cutstep:
-            if trb['loss_cce'] > args.cce_thresh:
-                print(f"CCE loss: {trb['loss_cce']} of best total loss below cutoff of {args.cce_thresh} at step {step} so terminating early")
-                return None, None
+        if stop_early(args,trb,step):
+            return None, None
 
 
         # no update on last iteration
@@ -602,19 +605,23 @@ def gradient_descent(steps, Net, ml, input_logits, args, trb, trk, net_kwargs={}
                 end=start+L_repeat
                 input_logits_biased[:,:,start:end,:]=input_logits_biased[:,:,0:L_repeat,:]
 
+        
         # gumbel-softmax sampling
-        msa_one_hot = logits_to_probs(input_logits_biased, add_gumbel_noise=args.seq_sample, 
-                                      output_type=args.seq_prob_type)
-
-        with torch.cuda.amp.autocast(enabled=True):
-            out = Net(torch.argmax(msa_one_hot,axis=-1).to(device), msa_one_hot=msa_one_hot.to(device),
-                      **net_kwargs)
-            dict_pred, probs = get_c6d_dict(out)
+        msa_one_hot = logits_to_probs(input_logits_biased, optimizer, step, steps+1, add_gumbel_noise=args.seq_sample,
+                                        learning_rate=args.learning_rate ,output_type=args.seq_prob_type)  
+        
+        out = Net(torch.argmax(msa_one_hot,axis=-1).to(device), msa_one_hot=msa_one_hot.to(device),
+                  **net_kwargs)
+        dict_pred, probs = get_c6d_dict(out,args=args) 
 
         # calculate loss
-        net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None), 'msa_one_hot': msa_one_hot}
+        net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None), 'msa_one_hot': msa_one_hot, 'lddt': out.get('lddt', None),'alpha': out.get('alpha', None)} 
         E_0 = ml.score(net_out)
          
+        # initial coordinates for next iteration
+        if args.reuse_xyz:
+            net_kwargs['xyz_prev'] = out['xyz'].detach()
+
         # track intermediate losses
         if args.track_step is not None and step % args.track_step == 0:
             trk['step'].append(int(step))
@@ -645,9 +652,14 @@ def gradient_descent(steps, Net, ml, input_logits, args, trb, trk, net_kwargs={}
             ml.print_losses_line()
 
         # output intermediate result
-        if args.out_step is not None and step > 0 and step % args.out_step == 0:
+        out_step = []
+        if args.out_interval is not None:
+            out_step.extend(np.arange(args.out_interval,steps,args.out_interval))
+        if args.out_step is not None:
+            out_step.extend([int(x[1:]) for x in args.out_step.split(',') if x[0]=='g'])
+        if step in out_step:
             save_result(f'{trb["out_prefix"]}_g{step}', Net, ml, msa, args, trb, trk, 
-                        net_kwargs=net_kwargs)
+                        net_kwargs=net_kwargs,msa_one_hot=msa_one_hot)
             if args.drop > 0: Net = enable_dropout(Net) # dropout gets turned off when saving result
 
         if step != steps: # no update on last iteration
@@ -746,18 +758,22 @@ def mcmc(steps, Net, ml, msa, args, trb, trk, net_kwargs={},
             msa[:,:,start:end]=msa[:,:,0:L_repeat]
 
     # Prevent LM sampler from mutating forced positions
-    do_not_mutate = []
+    do_not_mutate, idx0_hal, aa_s = [], [], []
     if args.force_aa is not None:
         idxmap = dict(zip(trb['con_ref_pdb_idx'], trb['con_hal_idx0']))
-        idx0_hal = [idxmap[(x[0], int(x[1:-1]))] for x in args.force_aa.split(',')]
-        aa_s = [x[-1] for x in args.force_aa.split(',')]
-        
-        # set desired AAs in input msa
-        for i, aa in zip(idx0_hal, aa_s):
-            msa[0, 0, i] = aa_1_N[aa.upper()]
+        idx0_hal = idx0_hal + [idxmap[(x[0], int(x[1:-1]))] for x in args.force_aa.split(',')]
+        aa_s = aa_s + [x[-1] for x in args.force_aa.split(',')]
 
-        # prevent these positions from being mutated
-        do_not_mutate = [i+1 for i in idx0_hal]
+    if args.force_aa_hal is not None:
+        idx0_hal = idx0_hal + [int(x[1:-1])-1 for x in args.force_aa_hal.split(',')]
+        aa_s = aa_s + [x[-1] for x in args.force_aa_hal.split(',')]
+        
+    # set desired AAs in input msa
+    for i, aa in zip(idx0_hal, aa_s):
+        msa[0, 0, i] = aa_1_N[aa.upper()]
+
+    # prevent these positions from being mutated
+    do_not_mutate = [i+1 for i in idx0_hal]
 
     print('Starting MCMC...')
     print(f'{"step":>12}',end='')
@@ -765,29 +781,20 @@ def mcmc(steps, Net, ml, msa, args, trb, trk, net_kwargs={},
 
     sf_0 = np.exp(np.log(0.5) / args.mcmc_halflife)  # scaling factor / step
     
-    ########################
-    # mucking with reducing template features
-    ########################
-    if args.anneal_t1d:
-      sf_t1d = np.linspace(1., 0., steps)  # scaling factor for t1d features
-      if args.use_template is not None:
-        t1d_og = net_kwargs['t1d']
-    
-    if args.erode_template:
-      n_erode = sm.len_contigs(include_receptor=False) // 2 + 1  # erodes from both N and C term
-      erode_schedule = np.diff(np.floor(np.linspace(0, n_erode, steps+1))).astype(bool)
-    
     # initial score
-    # with torch.cuda.amp.autocast(enabled=True): # doesn't work with nvidia SE3
     msa_ = torch.tensor(msa).long().to(device)
     msa_1h = F.one_hot(msa_,21).float()
-    # hack for nvidia SE3 RF models: 1st forward pass gives error, but 2nd one works
-    try:
-        out = Net(msa_, msa_one_hot=msa_1h, **net_kwargs)
-    except:
-        out = Net(msa_, msa_one_hot=msa_1h, **net_kwargs)
+
+    # hack for nvidia SE3 RF models: 1st forward pass gives error, but later ones work
+    for i in range(2):
+        try:
+            out = Net(msa_, msa_one_hot=msa_1h, **net_kwargs)
+        except:
+            pass
+ 
+    out = Net(msa_, msa_one_hot=msa_1h, **net_kwargs)
     dict_pred, probs = get_c6d_dict(out, grad=False)
-    net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None), 'msa_one_hot':msa_1h}
+    net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None), 'msa_one_hot':msa_1h, 'lddt': out.get('lddt', None),'alpha': out.get('alpha', None)}
     E_0 = ml.score(net_out)
 
     for step in range(steps):
@@ -798,32 +805,16 @@ def mcmc(steps, Net, ml, msa, args, trb, trk, net_kwargs={},
                                       exclude_aa=args.exclude_aa,args=args)
         msa_list_NN_mutated = alphabet_mapping(msa_list_AA_mutated, aa_1_N)
         mutated_msa = np.array(msa_list_NN_mutated).reshape(B, N, L)
-
-        ##################################
-        # update t1d features
-        ##################################
-        if args.use_template is not None and args.anneal_t1d:
-            m1d_rec = torch.tensor(sm.m1d_receptor(), dtype=bool, device=device)[:, None]
-            net_kwargs['t1d']  = (~m1d_rec * sf_t1d[step] * t1d_og) + (m1d_rec * t1d_og)
-          
-        #print('t1d:', net_kwargs['t1d'].squeeze())
-        
-        ##################################
-        # Erode template features
-        ##################################
-        if args.use_template is not None and args.erode_template and erode_schedule[step]:
-            sm.erode()
-            args.use_template = ','.join(sm.get_contigs(include_receptor=False))
-            net_kwargs = contigs.make_template_features(pdb, args, device, sm_loss=sm)
-        
-        # with torch.cuda.amp.autocast(enabled=True): # doesn't work with nvidia SE3
+       
         msa_ = torch.tensor(mutated_msa).long().to(device)
         msa_1h = F.one_hot(msa_,21).float()
+
         out = Net(msa_, msa_one_hot=msa_1h, **net_kwargs)
+
         dict_pred, probs = get_c6d_dict(out, grad=False)
         
         # compute loss
-        net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None), 'msa_one_hot': msa_1h}
+        net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None), 'msa_one_hot': msa_1h, 'lddt': out.get('lddt', None),'alpha': out.get('alpha', None)}
         E_1 = ml.score(net_out)
         
         # Metropolis criteria for each batch 
@@ -835,6 +826,11 @@ def mcmc(steps, Net, ml, msa, args, trb, trk, net_kwargs={},
         bool_accept_np = bool_accept.detach().cpu().numpy()
         msa[:,:,:] = bool_accept_np[:,None,None] * mutated_msa[:,:,:] + (1-bool_accept_np[:,None,None]) * msa[:,:,:]
         
+        # initial coordinates for next iteration
+        if args.reuse_xyz:
+            net_kwargs['xyz_prev'] = bool_accept[:,None,None,None]*out['xyz'].detach() + \
+                                     (1-bool_accept[:,None,None,None])*net_kwargs['xyz_prev']
+
         # Every X steps, randomly choose fittest sequences to move forward with
         if (step%200 == 0) and (step != 0):
             # get fresh scores
@@ -843,7 +839,7 @@ def mcmc(steps, Net, ml, msa, args, trb, trk, net_kwargs={},
             out = Net(msa_, msa_one_hot=msa_1h, **net_kwargs)
             dict_pred, probs = get_c6d_dict(out, grad=False)
 
-            net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None),'msa_one_hot':msa_1h}
+            net_out = {'c6d': dict_pred, 'xyz': out.get('xyz', None),'msa_one_hot':msa_1h, 'lddt': out.get('lddt', None),'alpha': out.get('alpha', None)}
             E_1 = ml.score(net_out)
             
             L_ = torch.tensor(L, device=out_device, dtype=E_1.dtype)
@@ -877,9 +873,16 @@ def mcmc(steps, Net, ml, msa, args, trb, trk, net_kwargs={},
             #print(msa_list_AA_mutated)
 
         # output intermediate result
-        if args.out_step is not None and step > 0 and step % (10*args.out_step) == 0:
-            save_result(f'{trb["out_prefix"]}_m{step}', Net, ml, msa, args, trb, trk, 
+        out_step = []
+        if args.out_interval is not None:
+            out_step.extend(np.arange(args.out_interval*10,steps,args.out_interval*10))
+        if args.out_step is not None:
+            out_step.extend([int(x[1:]) for x in args.out_step.split(',') if x[0]=='m'])
+        if step in out_step:
+            save_result(f'{trb["out_prefix"]}_g{step}', Net, ml, msa, args, trb, trk, 
                         net_kwargs=net_kwargs)
+            if args.drop > 0: Net = enable_dropout(Net) # dropout gets turned off when saving result
+
 
     print(f'Max CUDA memory: {torch.cuda.max_memory_allocated()/1e9:.4f}G')
     torch.cuda.reset_peak_memory_stats()

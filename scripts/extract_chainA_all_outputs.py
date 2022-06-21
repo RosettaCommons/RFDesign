@@ -21,21 +21,23 @@ from collections import OrderedDict
 
 p = argparse.ArgumentParser()
 p.add_argument('data_dir', help='Folder of TrDesign outputs to process')
-p.add_argument('--twochain_dir', help='Folder to move the original 2-chain outputs. Default: FOLDER/2chain/')
+p.add_argument('--out_dir', help='Folder to output chain A files. Default: FOLDER/chainA/')
 args = p.parse_args()
 
-if args.twochain_dir is None:
-    args.twochain_dir = os.path.join(args.data_dir, '2chain/')
+if args.out_dir is None:
+    args.out_dir = os.path.join(args.data_dir, 'chainA/')
 
-os.makedirs(args.twochain_dir, exist_ok=True)
+os.makedirs(args.out_dir, exist_ok=True)
 
 for fn in glob.glob(os.path.join(args.data_dir,'*.pdb')):
     name = os.path.basename(fn).replace('.pdb','')
 
     # remove chain B from pdb
-    monomer_fn = fn
-    twochain_fn = os.path.join(args.twochain_dir,name+'.pdb')
-    shutil.move(monomer_fn, twochain_fn) # moving 2-chain file to new location
+    twochain_fn = fn
+    monomer_fn = os.path.join(args.out_dir,name+'.pdb')
+    if os.path.exists(monomer_fn):
+        print(f'{monomer_fn} exists, skipping this design.')
+        continue
 
     seen_ter = False # keep only 1 "TER" line
     with open(twochain_fn) as f:
@@ -52,9 +54,8 @@ for fn in glob.glob(os.path.join(args.data_dir,'*.pdb')):
                 print(line.strip(),file=outf)
 
     # remove chain B from fas
-    monomer_fn = fn.replace('.pdb','.fas')
-    twochain_fn = os.path.join(args.twochain_dir,name+'.fas')
-    shutil.move(monomer_fn, twochain_fn) # moving 2-chain file to new location
+    twochain_fn = fn.replace('.pdb','.fas')
+    monomer_fn = os.path.join(args.out_dir,name+'.fas')
 
     seq = open(twochain_fn).readlines()[1].strip()
     L = seq.index('/')
@@ -63,19 +64,17 @@ for fn in glob.glob(os.path.join(args.data_dir,'*.pdb')):
         print(f'>{name}', file=outf)
         print(seq, file=outf)
 
-    # remove chain B from npz
-    monomer_fn = fn.replace('.pdb','.npz')
-    twochain_fn = os.path.join(args.twochain_dir,name+'.npz')
-    shutil.move(monomer_fn, twochain_fn) # moving 2-chain file to new location
+    # remove chain B from npz (only works for --rec_placement second)
+    twochain_fn = fn.replace('.pdb','.npz')
+    monomer_fn = os.path.join(args.out_dir,name+'.npz')
 
     npz = np.load(twochain_fn)
     npz_ = {x:npz[x][:L,:L] for x in npz}
     np.savez(monomer_fn, **npz_)
 
     # remove chain B from trb
-    monomer_fn = fn.replace('.pdb','.trb')
-    twochain_fn = os.path.join(args.twochain_dir,name+'.trb')
-    shutil.move(monomer_fn, twochain_fn) # moving 2-chain file to new location
+    twochain_fn = fn.replace('.pdb','.trb')
+    monomer_fn = os.path.join(args.out_dir,name+'.trb')
 
     trb = np.load(twochain_fn, allow_pickle=True)
     idx = [i for i,x in enumerate(trb['con_ref_pdb_idx']) if x[0]=='A']

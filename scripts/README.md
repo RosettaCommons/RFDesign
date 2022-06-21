@@ -6,7 +6,7 @@ scoring results from hallucination (`design.py`)
 
 ## Usage
 
-After a hallucination run, first generate a relaxed model with sidechains:
+After a hallucination or inpainting run, first generate a relaxed model with sidechains:
 
     ./trf_relax.sh FOLDER
 
@@ -105,4 +105,14 @@ the receptor chain from the alignment:
     ./pymol_align.py --template REFERENCE.pdb -o OUTPUT.pse --exclude_chain R FOLDER/*pdb
 
 See code of pymol_align.py for a few more options. 
+
+
+### Legacy scripts
+
+Previously, we computed RMSD, DAN-lDDT (Deep Accuracy Net), and TM-score to
+template using this command, which is a wrapper for `pyrosetta_metrics.py`,
+`lddt.sh`, and `get_tmscores.py`. Now we use AF2 plDDT rather than DAN-lDDT, so
+this combined script isn't often used.
+
+    ./calc_metrics.sh FOLDER/trf_relax
 

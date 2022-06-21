@@ -36,7 +36,11 @@ class AffineTransform(object):
         C = torch.matmul(xyz1.permute(0,2,1), xyz2)
 
         # Compute optimal rotation matrix using SVD
-        V, S, W = torch.svd(C)
+        try:
+            V, S, W = torch.svd(C.to(torch.float32))
+        except: #incase ill conditioned doesnt work if full of nans
+            V, S, W = torch.svd(C.to(torch.float32)+1e-2*C.mean()*torch.rand(C.shape, device=C.device))
+
 
         # get sign to ensure right-handedness
         d = torch.ones([self.B,3,3], device=xyz1.device)
@@ -44,9 +48,11 @@ class AffineTransform(object):
 
         # Rotation matrix U
         U = torch.matmul(d*V, W.permute(0,2,1)) # (B, 3, 3)
+        
+        if xyz1.dtype == torch.float16: #set ref to half
+            U = U.to(torch.float16)
 
         return U
-    
     @property
     def components(self):
         '''Componenets of the affine transform'''
@@ -311,74 +317,7 @@ def calc_dist_rmsd(pred_xyz, ref_xyz, mappings=None, log=False, eps=1e-6):
     
     return rms
 
-def calc_fape(pred_xyz, ref_xyz, mappings=None, A=20.0, gamma=0.95):
-    '''
-    Calculate frame-aligned point error used by Deepmind
-    Input:
-        - pred_xyz: predicted coordinates (B, L, n_atom, 3)
-        - ref_xyz: ref_xyz coordinates (B, L, n_atom, 3)
-    Output: str loss
-    '''
-    def get_t(N, Ca, C, eps=1e-5):
-        #N, Ca, C - [B, L, 3]
-        #R - [B, L, 3, 3], det(R)=1, inv(R) = R.T, R is a rotation matrix
-        #t - [B, L, L, 3] is the global rotation and translation invariant displacement
-        v1 = N-Ca # (B, L, 3)
-        v2 = C-Ca # (B, L, 3)
-        e1 = v1/(torch.norm(v1, dim=-1, keepdim=True)+eps) # (B, L, 3)
-        u2 = v2 - (torch.einsum('blj,blj->bl', v2, e1).unsqueeze(-1)*e1) # (B,L,3)
-        e2 = u2/(torch.norm(u2, dim=-1, keepdim=True)+eps) # (B, L, 3)
-        e3 = torch.cross(e1, e2, dim=-1) # (B, L, 3)
-        R = torch.stack((e1,e2,e3), dim=-2) #[B,L,3,3] - rotation matrix
-        t = Ca.unsqueeze(-2) - Ca.unsqueeze(-3) # (B,L,L,3)
-        t = torch.einsum('bljk, blmk -> blmj', R, t) # (B,L,L,3)
-        return t
-
-    # extract constrained region
-    if mappings is not None:
-        pred_xyz = pred_xyz[:,mappings['con_hal_idx0'],:,:]
-        ref_xyz = ref_xyz[mappings['con_ref_idx0'],:,:]
-
-    ref_xyz = ref_xyz[None].to(pred_xyz.device)
-
-    t_tilde_ij = get_t(ref_xyz[:,:,0], ref_xyz[:,:,1], ref_xyz[:,:,2])
-    t_ij = get_t(pred_xyz[:,:,0], pred_xyz[:,:,1], pred_xyz[:,:,2])
-
-    difference = torch.norm(t_tilde_ij-t_ij,dim=-1) # (B, L, L)
-    loss = -(torch.nn.functional.relu(1.0-difference/A)).mean(dim=(1,2))
-
-    return loss
-
-def calc_lddt(pred_ca, true_ca, mappings=None, eps=1e-6):
-    '''
-    Input:
-     - pred_ca: predicted CA coordinates (B, L, 3)
-     - true_ca: true CA coordinates (L, 3)
-
-    Output:
-     - lddt: mean lddt over residues (B)
-    '''
-    # extract constrained region
-    if mappings is not None:
-        pred_ca = pred_ca[:,mappings['con_hal_idx0']]
-        true_ca = true_ca[mappings['con_ref_idx0']]
-
-    B, L = pred_ca.shape[:2]
-
-    pred_dist = torch.cdist(pred_ca, pred_ca) # (B, L, L)
-    true_dist = torch.cdist(true_ca, true_ca)[None].to(pred_ca.device) # (1, L, L)
-
-    mask = torch.logical_and(true_dist > 0.0, true_dist < 15.0) # (B, L, L)
-
-    delta = torch.abs(pred_dist-true_dist) # (B, L, L)
-
-    lddt = torch.zeros((B,L), device=pred_ca.device)
-    for distbin in [0.5, 1.0, 2.0, 4.0]:
-        lddt += 0.25*torch.sum((delta<=distbin)*mask, dim=-1) / (torch.sum(mask, dim=-1) + eps)
-
-    return lddt.mean(dim=1), lddt
-
-def get_entropy_loss(net_out, mask=None, beta=1, dist_bins=37, eps=1e-16):
+def get_entropy_loss(net_out, mask=None, beta=1, dist_bins=37, eps=1e-16, type_='orig',k=5):
     '''
     net_out - dict with keys: 'c6d' (all pairwise 6D transforms) and/or 'c3d' (3D cartesian coordinates).
                 This function uses 'c6d' only. It is a dictionary with the following keys:
@@ -388,10 +327,34 @@ def get_entropy_loss(net_out, mask=None, beta=1, dist_bins=37, eps=1e-16):
             (torch.float32)[sequence_length, sequence_length]
     '''
     
-    def entropy(p, mask):
+    def entropy_orig(p, mask):
         S_ij = -(p * torch.log(p + eps)).sum(axis=-1)
         S_ave = torch.sum(mask * S_ij, axis=(1,2)) / (torch.sum(mask, axis=(1,2)) + eps)
         return S_ave
+    
+    def entropy_leaky(p,p_, mask):
+        S_ij = -(p * torch.log(p_ + eps)[...,:-1]).sum(axis=-1)
+        S_ave = torch.sum(mask * S_ij, axis=(1,2)) / (torch.sum(mask, axis=(1,2)) + eps)
+        return S_ave
+    
+    def entropy_leaky_min(p,p_, mask):
+        S_ij = -(p * torch.log(p_ + eps)[...,:-1]).sum(axis=-1)
+        #pick top k
+        S_ij = mask * S_ij
+        S_ij[S_ij==0] = 100
+        S_ij_min=torch.topk(S_ij, k,largest=False)[0]
+        S_ij_min[S_ij_min==100] = 0 
+        S_ave=torch.sum(S_ij_min,axis=(1,2))/ (torch.sum(mask, axis=(1,2)) + eps)*10 #*k
+        return S_ave
+    
+    def entropy(p,p_, mask):
+        if type_=='orig':
+            return entropy_orig(p, mask)
+        elif type_=='leaky':
+            return entropy_leaky(p,p_, mask)
+        elif type_=='leaky_min':
+            return entropy_leaky_min(p,p_, mask)
+    
     
     # This loss function uses c6d
     dict_pred = net_out['c6d']
@@ -415,20 +378,24 @@ def get_entropy_loss(net_out, mask=None, beta=1, dist_bins=37, eps=1e-16):
 
     # Modulate sharpness of probability distribution
     # Also exclude >20A bin, which improves output quality
-    pd = torch.softmax(torch.log(beta * dict_pred['p_dist'][...,:dist_bins] + eps), axis = -1)
+    pd = torch.softmax(torch.log(beta * dict_pred['p_dist'][...,:-1] + eps), axis = -1)
+    pd_= torch.softmax(torch.log(beta * dict_pred['p_dist'] + eps), axis = -1)
     po = torch.softmax(torch.log(beta * dict_pred['p_omega'][...,:36] + eps), axis = -1)
+    po_= torch.softmax(torch.log(beta * dict_pred['p_omega'] + eps), axis = -1)
     pt = torch.softmax(torch.log(beta * dict_pred['p_theta'][...,:36] + eps), axis = -1)
+    pt_= torch.softmax(torch.log(beta * dict_pred['p_theta'] + eps), axis = -1)
     pp = torch.softmax(torch.log(beta * dict_pred['p_phi'][...,:18] + eps), axis = -1)
+    pp_= torch.softmax(torch.log(beta * dict_pred['p_phi'] + eps), axis = -1)
     
-    # Entropy loss    
-    S_d = entropy(pd.to(device), mask)
-    S_o = entropy(po.to(device), mask)
-    S_t = entropy(pt.to(device), mask)
-    S_p = entropy(pp.to(device), mask)
+    # Entropy loss  
+    #print('distance')
+    S_d = entropy(pd.to(device),pd_.to(device), mask)
+    S_o = entropy(po.to(device),po_.to(device), mask)
+    S_t = entropy(pt.to(device),pt_.to(device), mask)
+    S_p = entropy(pp.to(device),pp_.to(device), mask)
     loss = 0.25 * (S_d + S_o + S_t + S_p)
-    
-    return loss
 
+    return loss
 
 def get_kl_loss(net_out, bkg, mask=None, eps=1e-16):
     '''
@@ -495,16 +462,14 @@ def n_neighbors(xyz, n=1, m=9, a=0.5, b=2):
         n_nbr : number of neighbors (real-valued) for each position 
     """
 
-    c6d = geometry.xyz_to_c6d(xyz.permute(0,2,1,3),{'DMAX':20.0})
+    c6d, mask = geometry.xyz_to_c6d_smooth(xyz.permute(0,2,1,3),{'DMAX':20.0})
 
     dist = c6d[...,0]
     phi = c6d[...,3]
-    phi[dist>20] = np.nan
-    dist[dist>20] = np.nan
 
-    f_dist = 1/(1+torch.exp(n*(dist-m)))
-    f_ang = ((torch.cos(np.pi-phi)+a)/(1+a))**b
-    n_nbr = torch.nansum(f_dist*f_ang,axis=2)
+    f_dist = 1/(1+torch.exp(n*(dist*mask-m)))
+    f_ang = ((torch.cos(np.pi-phi*mask)+a)/(1+a))**b
+    n_nbr = torch.nansum(f_dist*f_ang*mask,axis=2)
     
     return n_nbr
  
@@ -514,7 +479,7 @@ def superimpose_pred_xyz(pred_xyz, ref_xyz, mappings=None):
 
     Input:
         - pred_xyz: predicted coordinates (B, L, 3, 3)
-        - ref_xyz:  reference coordinates (B, L, 3, 3)
+        - ref_xyz:  reference coordinates (B, L, 3, 3) I don't think this has batch dim
         - mappings: dictionary with keys 'con_ref_idx0' and 'con_hal_idx0' containing
                     the residue numbers of the motif to constrain
 
@@ -524,13 +489,18 @@ def superimpose_pred_xyz(pred_xyz, ref_xyz, mappings=None):
         - U:             rotation matrix to align hallucinated motif with reference motif 
                          (after centering) (3, 3)
     '''
+    
+    pred_xyz=pred_xyz[:,:,:3,:]
+    ref_xyz=ref_xyz[:,:3,:]
+        
     def centroid(X):
         return X.mean(dim=-2, keepdim=True)
 
     # extract constrained region
-    if mappings is not None:
+    if mappings is not None:    
         pred_xyz = pred_xyz[:,mappings['con_hal_idx0'],:,:]
         ref_xyz = ref_xyz[mappings['con_ref_idx0'],:,:]
+        
 
     ref_xyz = ref_xyz[None].to(pred_xyz.device)
     B, L = pred_xyz.shape[:2]
@@ -544,24 +514,29 @@ def superimpose_pred_xyz(pred_xyz, ref_xyz, mappings=None):
     # reshape ref_xyz crds to match the shape to pred_xyz crds
     pred_xyz = pred_xyz.view(B, L*3, 3)
     ref_xyz = ref_xyz.view(1, L*3, 3)
-
+        
+    if pred_xyz.dtype == torch.float16: #set ref to half
+        ref_xyz=ref_xyz.to(torch.float16)
+    
     # Computation of the covariance matrix
-    C = torch.matmul(pred_xyz.permute(0,2,1), ref_xyz)
+    C = torch.matmul(pred_xyz.permute(0,2,1), ref_xyz) 
 
     # Compute optimal rotation matrix using SVD
-    V, S, W = torch.svd(C)
+    V, S, W = torch.svd(C.to(torch.float32)) #SVD not implemented for half
 
     # get sign to ensure right-handedness
     d = torch.ones([B,3,3], device=pred_xyz.device)
     d[:,:,-1] = torch.sign(torch.det(V)*torch.det(W)).unsqueeze(1)
 
     # Rotation matrix U
-    U = torch.matmul(d*V, W.permute(0,2,1)) # (B, 3, 3)                                               
+    U = torch.matmul(d*V, W.permute(0,2,1)) # (B, 3, 3)  
+    if pred_xyz.dtype == torch.float16: #set ref to half
+        U = U.to(torch.float16)
 
     # Rotate pred_xyz
     rP = torch.matmul(pred_xyz, U) # (B, L*3, 3)
    
-    return pred_centroid, ref_centroid, U
+    return pred_centroid, ref_centroid, U 
 
 
 def calc_crd_rmsd(pred_xyz, ref_xyz, mappings=None, log=False):
@@ -573,12 +548,15 @@ def calc_crd_rmsd(pred_xyz, ref_xyz, mappings=None, log=False):
         - ref_xyz: reference coordinates of motif (B, L*3, 3)
     Output: RMSD
     '''
+    pred_xyz=pred_xyz[:,:,:3,:]
+    ref_xyz=ref_xyz[:,:3,:]
+        
     def rmsd(V, W, eps=1e-6):
         L = V.shape[1]
         return torch.sqrt(torch.sum((V-W)*(V-W), dim=(1,2)) / L + eps)
 
     # extract constrained region
-    if mappings is not None:
+    if mappings is not None:    
         pred_xyz = pred_xyz[:,mappings['con_hal_idx0'],:,:]
         ref_xyz = ref_xyz[mappings['con_ref_idx0'],:,:]
 
@@ -609,8 +587,9 @@ def get_dist_to_ligand(pred_xyz, lig_xyz):
     Output:
         - dist_lig: distances from predicted motif to ligand
     '''
-    B, L = pred_xyz.shape[:2]
-    pred_xyz = pred_xyz.view(B, L*3, 3)
+    pred_xyz = pred_xyz[:,:,:3,:]
+    B, L     = pred_xyz.shape[:2]
+    pred_xyz = pred_xyz.reshape(B, L*3, 3)
 
     lig_xyz = lig_xyz[None].to(pred_xyz.device)
     #L_lig = lig_xyz.shape[1]

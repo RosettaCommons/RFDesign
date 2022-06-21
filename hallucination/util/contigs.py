@@ -5,7 +5,7 @@ import kinematics, geometry
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, script_dir+'/../')
-import models.rf_perceiver_v00.kinematics as kinematics_perc
+import models.rf_Nov05_2021.kinematics as kinematics_nov05
 
 def parse_range_string(el):
   ''' Splits string with integer or integer range into start and end ints. '''
@@ -1337,19 +1337,11 @@ def make_template_features(pdb, args, device, hal_2_ref_idx0=None, sm_loss=None)
         xyz_t = torch.tensor(pdb['xyz'][:, :3][None, None])  # (batch,templ,nres,3,3)
         t0d = torch.ones((1,1,3))  # (batch, templ, 3)
 
-        if 'rf_perc' in args.network_name:
-            t2d_ref = kinematics_perc.xyz_to_t2d(xyz_t=xyz_t, t0d=t0d, params=PARAMS)  # (B,T,L,L,...)
-            L_ref = t2d_ref.shape[2]
-            t1d_ref = torch.ones(size=(B,T,L_ref,1), dtype=torch.float32, device=device)
-        else:
-            t2d_ref = kinematics.xyz_to_t2d(xyz_t=xyz_t, t0d=t0d, params=PARAMS)  # (B,T,L,L,...)
-            L_ref = t2d_ref.shape[2]
-            #t1d_ref = torch.ones(size=(B,T,L_ref,3), dtype=torch.float32, device=device)
-            a = 2 * torch.ones([B,T,L_ref], dtype=torch.float32, device=device)
-            b = 0 * torch.ones([B,T,L_ref], dtype=torch.float32, device=device)
-            c = 1 * torch.ones([B,T,L_ref], dtype=torch.float32, device=device)
-
-            t1d_ref = torch.stack([a,b,c], axis=-1)
+        t2d_ref = kinematics_nov05.xyz_to_t2d(xyz_t=xyz_t, params=PARAMS)  # (B,T,L,L,...)
+        L_ref = t2d_ref.shape[2]
+        t1d_ref = torch.nn.functional.one_hot(torch.tensor(pdb['seq']), num_classes=21).float()
+        t1d_ref = torch.cat((t1d_ref, torch.full((L_ref,1),1).float()), -1) #SL: could experiment on template confidence to allow movement during hallucination 
+        t1d_ref = t1d_ref.repeat((B,T,1,1)).to(device)
 
         # Get the mask_str for scattering template features
         #1. Template mask = sampled mask
@@ -1361,26 +1353,21 @@ def make_template_features(pdb, args, device, hal_2_ref_idx0=None, sm_loss=None)
           
           if args.receptor:
             receptor_contig = sm_loss.get_receptor_contig()
-            subset_contigs = ','.join([subset_contigs, receptor_contig])
+            if args.use_template.lower() == 'no_contig':
+                subset_contigs = receptor_contig
+            else:
+                subset_contigs = ','.join([subset_contigs, receptor_contig])
           
           mask_str_tmpl = sm_loss.subset(subset_contigs)            
           sm_tmpl = SampledMask(mask_str=mask_str_tmpl, ref_pdb_idx=pdb['pdb_idx'])
           
         # scatter template features
-        if args.network_name == 'rf_Nov05_2021':
-            # t1d for this network should have gaps rather than zeros to indicate "no template"
-            t1d_tmpl = torch.nn.functional.one_hot(torch.full((sm_tmpl.L_hal,), 20).long(), num_classes=21).float()
-            t1d_tmpl = torch.cat((t1d_tmpl, torch.zeros((sm_tmpl.L_hal,1)).float()), -1)
-            t1d_tmpl = t1d_tmpl.repeat((B,T,1,1)).to(device)
-            idx_hal = sm_tmpl.con_mappings['hal_idx0']
-            idx_ref = sm_tmpl.con_mappings['ref_idx0']
-            t1d_tmpl[...,idx_hal,:] = t1d_ref[...,idx_ref,:]
-
-        else:    
-            t1d_ref = t1d_ref.permute(2,3,0,1)  # (L, ..., B, T)
-            t1d_tmpl = sm_tmpl.scatter_1d(t1d_ref.cpu().numpy())
-            t1d_tmpl = torch.tensor(t1d_tmpl, device=device)
-            t1d_tmpl = t1d_tmpl.permute(2,3,0,1) # Permute B and T dims back to front
+        t1d_tmpl = torch.nn.functional.one_hot(torch.full((sm_tmpl.L_hal,), 20).long(), num_classes=21).float()
+        t1d_tmpl = torch.cat((t1d_tmpl, torch.zeros((sm_tmpl.L_hal,1)).float()), -1)
+        t1d_tmpl = t1d_tmpl.repeat((B,T,1,1)).to(device)
+        idx_hal = sm_tmpl.con_mappings['hal_idx0']
+        idx_ref = sm_tmpl.con_mappings['ref_idx0']
+        t1d_tmpl[...,idx_hal,:] = t1d_ref[...,idx_ref,:]
 
         t2d_ref = t2d_ref.permute(2,3,4,0,1)  # (L, L, ..., B, T)        
         t2d_tmpl = sm_tmpl.scatter_2d(t2d_ref.cpu().numpy())
@@ -1389,18 +1376,13 @@ def make_template_features(pdb, args, device, hal_2_ref_idx0=None, sm_loss=None)
         t2d_tmpl = torch.tensor(t2d_tmpl, device=device)
         t2d_tmpl = t2d_tmpl.permute(3,4,0,1,2) # Permute B and T dims back to front
         
-        if args.network_name == 'rf_Nov05_2021':
-            t2d_tmpl[..., -1:] = 1.
-        else:
-            # Make last 3 idx of last dim all 1 to mimick Ivan's template feature
-            t2d_tmpl[..., -3:] = 1.
+        t2d_tmpl[..., -1:] = 1.
 
         idx = torch.tensor(sm_tmpl.idx_for_template(gap=200), device=device)[None]
-        
         net_kwargs = {
-            'idx': idx,
-            't1d': t1d_tmpl,
-            't2d': t2d_tmpl
+            'idx'   : idx,
+            't1d'   : t1d_tmpl,
+            't2d'   : t2d_tmpl
         }
 
     elif args.template_pdbs is not None:

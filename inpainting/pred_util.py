@@ -1,16 +1,8 @@
-# Helper module for creating masks and masked tensors for RFold input 
-
+import sys, os, copy
 import torch 
 import numpy as np
-#from icecream import ic
-from dj_util import SampledMask
-
-import sys, os, copy
-
-# absolute path to folder containing this file
-script_dir = os.path.dirname(os.path.realpath(__file__))
-
-sys.path.append(script_dir+'/../hallucination/util/')
+from icecream import ic
+from inpaint_util import ResidueMap
 import contigs
 
 
@@ -43,7 +35,6 @@ model_param = {'SE3_param': {'div': 2,
               'r_ff': 4}
 model_param['use_templ'] = True
 
-
 def get_mask(args, parsed_pdb, chain_idx_gap=500):
     """
     Gets 1-d boolean mask corresponding to residue positions to replace/inpaint.
@@ -69,20 +60,8 @@ def get_mask(args, parsed_pdb, chain_idx_gap=500):
                 hal_idx1:        all regions (masked and kept), output pdb numbering, 1-indexed contiguous by chain
     """
     # contig/inverse mask mode: specify residues to keep
-    if args.contigs is not None:
-        # contig mode: chain letter starting each range
-        if all([x[0].isalpha() for x in args.contigs.split(',')]): 
-            if args.len is None:
-                sys.exit('ERROR: Either --len must be given or --contigs argument must have gap lengths.')
-            _, mappings = contigs.scatter_contigs(contigs=args.contigs, 
-                                                  pdb_out=parsed_pdb, 
-                                                  L_range=args.len, 
-                                                  keep_order=args.keep_order, 
-                                                  min_gap=args.min_gap)
-
-        # inverse mask mode: some ranges don't have chain letter
-        else: 
-            _, mappings = contigs.apply_mask(args.contigs, parsed_pdb)
+    if args.contigs:        
+        _, mappings = contigs.apply_mask(args.contigs, parsed_pdb)
             
         mask_str = mappings['sampled_mask']
         sm = SampledMask(mask_str, ref_pdb_idxs=parsed_pdb['pdb_idx'])
@@ -135,7 +114,43 @@ def get_mask(args, parsed_pdb, chain_idx_gap=500):
 
     return sm, mappings, mask_str, mask_seq
 
+def get_residue_map(args, parsed_pdb):
+    if 'len' in args and args.len:
+        assert len(args.len) == len(args.contigs), 'If passing lengths, the number of entries must match the number of contig entries. Use 0 for contigs that sample gap lengths (instead of scattering contigs).'
+    else:
+        args.len = len(args.contigs) * [0]
+    
+    contig_list = []
+    for L_range, con in zip(args.len, args.contigs):
+        # CASE 1: Contigs need to be scattered
+        if all([x[0].isalpha() for x in con.split(',')]):
+            _, mappings = contigs.scatter_contigs(contigs=con, 
+                                                  pdb_out=parsed_pdb, 
+                                                  L_range=L_range, 
+                                                  keep_order=args.keep_order, 
+                                                  min_gap=args.min_gap)
+        # CASE 2: Gaps need to be sampled
+        else:
+            _, mappings = contigs.apply_mask(con, parsed_pdb)
+            
+        contig_list.append(mappings['sampled_mask'])
+            
+        # Add any inpainting regions
+        #inpaint_seq_ranges = [('ref', sel) for sel in args.inpaint_seq.split(',')] if args.inpaint_seq else []
+        inpaint_seq_ranges = [('ref', sel) for sel in args.inpaint_seq] if args.inpaint_seq else []
+        #inpaint_str_ranges = [('ref', sel) for sel in args.inpaint_str.split(',')] if args.inpaint_str else []
+        inpaint_str_ranges = [('ref', sel) for sel in args.inpaint_str] if args.inpaint_str else []
+        
+    print('asdfasf', contig_list)
+    rm = ResidueMap(contig_list=contig_list, 
+                    ref_pdb_idxs=parsed_pdb['pdb_idx'],
+                    inpaint_seq_ranges=inpaint_seq_ranges,
+                    inpaint_str_ranges=inpaint_str_ranges,
+                   )
+    mappings = rm.mappings
 
+    return rm, mappings 
+  
 def mask_inputs(args, mask_str, seq, msa, msa_full, xyz_t, f1d_t, mask_seq=None):
 
     if mask_seq is None:
@@ -187,27 +202,3 @@ def mask_inputs(args, mask_str, seq, msa, msa_full, xyz_t, f1d_t, mask_seq=None)
         sys.exit(f'Invalid task {args.task}')
     
     return seq, msa, msa_full, xyz_t, f1d_t 
-
-def rw_ins_input(args,mask_orig,xyz_t,seq,msa,msa_full,mask,DEVICE):
-    idx_ins      = np.random.choice(np.where(mask_orig)[0], 1, replace=False)[0]
-    xyz_t_new    = torch.full((1,xyz_t.shape[1],1,3,3),np.nan).to(DEVICE) #torch.full((1,1,L,3,3),np.nan)
-    xyz_t        = torch.cat([xyz_t[:,:,:idx_ins], xyz_t_new, xyz_t[:,:,idx_ins:]], 2) 
-    seq_new      = torch.full((1,), 20)[None].to(DEVICE) 
-    seq          = torch.cat([seq[:,:idx_ins],seq_new,seq[:,idx_ins:]],1) 
-    msa_new      = torch.full((msa.shape[0],1), args.msa_mask_token)[None].to(DEVICE) 
-    msa          = torch.cat([msa[:,:,:idx_ins],msa_new,msa[:,:,idx_ins:]],2)
-    msa_full_new = torch.full((msa_full.shape[0],1), args.msa_mask_token)[None].to(DEVICE) 
-    msa_full     = torch.cat([msa_full[:,:,:idx_ins],msa_full_new,msa_full[:,:,idx_ins:]],2)
-    mask_orig    = np.insert(mask_orig, idx_ins, True, axis=0)
-    mask         = np.insert(mask, idx_ins, True, axis=0)
-    return mask_orig,xyz_t,seq,msa,msa_full,mask,idx_ins
-
-def rw_del_input(args,mask_orig,xyz_t,seq,msa,msa_full,mask,DEVICE):
-    idx_del      = np.random.choice(np.where(mask_orig)[0], 1, replace=False)[0]
-    xyz_t        = torch.cat([xyz_t[:,:,:idx_del], xyz_t[:,:,idx_del+1:]], 2)  
-    seq          = torch.cat([seq[:,:idx_del],seq[:,idx_del+1:]],1) 
-    msa          = torch.cat([msa[:,:,:idx_del],msa[:,:,idx_del+1:]],2)
-    msa_full     = torch.cat([msa_full[:,:,:idx_del],msa_full[:,:,idx_del+1:]],2)
-    mask_orig    = np.delete(mask_orig, idx_del, axis=0)
-    mask         = np.delete(mask, idx_del, axis=0)
-    return mask_orig,xyz_t,seq,msa,msa_full,mask,idx_del

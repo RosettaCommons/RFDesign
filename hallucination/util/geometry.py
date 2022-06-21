@@ -125,7 +125,48 @@ def xyz_to_c6d(xyz, params):
     
     return c6d
     
+def xyz_to_c6d_smooth(xyz, params):
+    """convert cartesian coordinates into 2d distance 
+    and orientation maps without using in-place operations
+    
+    Parameters
+    ----------
+    xyz : pytorch tensor of shape [batch,3,nres,3]
+          stores Cartesian coordinates of backbone N,Ca,C atoms
+    Returns
+    -------
+    c6d : pytorch tensor of shape [batch,nres,nres,4]
+          stores stacked dist,omega,theta,phi 2D maps 
+    mask: boolean mask that is 1 when a pair distance is within cutoff
+    """
+    batch = xyz.shape[0]
+    nres = xyz.shape[2]
 
+    # three anchor atoms
+    N  = xyz[:,0]
+    Ca = xyz[:,1]
+    C  = xyz[:,2]
+
+    # recreate Cb given N,Ca,C
+    b = Ca - N
+    c = C - Ca
+    a = torch.cross(b, c, dim=-1)
+    Cb = -0.58273431*a + 0.56802827*b - 0.54067466*c + Ca
+
+    dist = get_pair_dist(Cb,Cb)
+    mask = (dist + 999.9*torch.eye(nres,device=xyz.device)[None,...])<params['DMAX']
+    b,i,j = torch.where(mask)
+
+    omega = torch.zeros([batch,nres,nres],dtype=xyz.dtype,device=xyz.device)
+    theta = torch.zeros([batch,nres,nres],dtype=xyz.dtype,device=xyz.device)
+    phi = torch.zeros([batch,nres,nres],dtype=xyz.dtype,device=xyz.device)
+
+    omega[b,i,j] = get_dih(Ca[b,i], Cb[b,i], Cb[b,j], Ca[b,j])
+    theta[b,i,j] = get_dih(N[b,i], Ca[b,i], Cb[b,i], Cb[b,j])
+    phi[b,i,j] = get_ang(Ca[b,i], Cb[b,i], Cb[b,j])
+
+    return torch.stack([dist, omega, theta, phi],dim=-1), mask
+ 
 # ============================================================
 def c6d_to_bins(c6d,params):
     """bin 2d distance and orientation maps

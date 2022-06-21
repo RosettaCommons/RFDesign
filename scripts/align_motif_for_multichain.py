@@ -22,10 +22,64 @@ p.add_argument('data_dir', help='Folder of TrDesign outputs to process')
 p.add_argument('-r','--receptor', required=True, help='Receptor (natural binding target) structure (.pdb)')
 p.add_argument('-t','--template', help='Template (natural binder) structure (.pdb)')
 p.add_argument('-o','--out_dir', default='aligned_to_rec/', help='Output folder for aligned binder.')
+p.add_argument('--interface_res',
+    help='File with space-separated integers of residue positions. Report rmsd on these '\
+         'residues as "interface_rmsd"')
 p.add_argument('--complex_out_dir', default='raw_complex/', help='Output folder for complex.')
 p.add_argument('--trb_dir', help='Folder containing .trb files (if not same as pdb folder)')
 p.add_argument('--out_suffix', default='', help='Suffix for output files')
 args = p.parse_args()
+
+def parse_range(_range):
+    if '-' in _range:
+      s, e = _range.split('-')
+    else:
+      s, e = _range, _range
+
+    return int(s), int(e)
+
+def parse_contig(contig):
+    '''
+    Return the chain, start and end residue in a contig or gap str.
+
+    Ex:
+    'A4-8' --> 'A', 4, 8
+    'A5'   --> 'A', 5, 5
+    '4-8'  --> None, 4, 8
+    'A'    --> 'A', None, None
+    '''
+
+    # is contig
+    if contig[0].isalpha():
+      ch = contig[0]
+      if len(contig) > 1:
+        s, e = parse_range(contig[1:])
+      else:
+        s, e = None, None
+    # is gap
+    else:
+      ch = None
+      s, e = parse_range(contig)
+
+    return ch, s, e
+
+def expand(mask_str):
+    '''
+    Ex: '2,A3-5,3' --> [None, None, (A,3), (A,4), (A,5), None, None, None]
+    '''
+    expanded = []
+    for l in mask_str.split(','):
+      ch, s, e = parse_contig(l)
+
+      # contig
+      if ch:
+        expanded += [(ch, res) for res in range(s, e+1)]
+      # gap
+      else:
+        expanded += [None for _ in range(s)]
+
+    return expanded
+
 
 def main():
 
@@ -49,8 +103,8 @@ def main():
 
         outname = os.path.join(args.out_dir, name + args.out_suffix+'.pdb')
         if os.path.exists(outname):
-            sys.exit(f'ERROR: Output file {outname} already exists. Choose a different '\
-                       'out_dir or out_suffix, or delete existing files.')
+            print(f'WARNING: Skipping {outname} because output file already exists. Delete before running if you want to replace it.')
+            continue
 
         trbname = os.path.join(trb_dir, os.path.basename(fn.replace(args.out_suffix+'.pdb','.trb')))
         if not os.path.exists(trbname): 
@@ -67,9 +121,18 @@ def main():
 
         ref_to_hal = dict(zip(trb['con_ref_pdb_idx'], trb['con_hal_pdb_idx']))
 
+        if args.interface_res is not None:
+            interface_res = expand(args.interface_res)
+        else:
+            interface_res = None
+
         # Make alignment maps
         align_map = pyrosetta.rosetta.std.map_core_id_AtomID_core_id_AtomID()
         for idx_ref in trb['con_ref_pdb_idx']:
+          
+            if interface_res is not None and idx_ref not in interface_res:
+                continue
+
             idx_hal = ref_to_hal[idx_ref]
 
             # Find equivalent residues in both structures

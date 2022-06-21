@@ -1,12 +1,12 @@
 import torch
-
-# Loss functions for the training
-# 1. BB rmsd loss
-# 2. distance loss (or 6D loss?)
-# 3. bond geometry loss
-# 4. predicted lddt loss
+from icecream import ic
+import random
+# Loss functions for training, all of which now take masks (1/True = unmasked, 0/False = masked)
 
 # Currently, only considers N, CA, C atoms. It should be updated once we're starting to handle full atoms!!
+
+def safe_cdist(x1, x2, p=2.0):
+    return torch.cdist(x1, x2, p=p, compute_mode = 'use_mm_for_euclid_dist')
 
 def get_t(N, Ca, C, eps=1e-5):
     #N, Ca, C - [I, B, L, 3]
@@ -23,12 +23,13 @@ def get_t(N, Ca, C, eps=1e-5):
     t = torch.einsum('ibljk, iblmk -> iblmj', R, t) # (I,B,L,L,3)
     return t
 
-def calc_str_loss(pred, true, A=20.0, gamma=0.95):
+def calc_str_loss(pred, true, str_mask, A=20.0, gamma=0.95):
     '''
     Calculate structural loss described in the AlphaFold2 patent
     Input:
         - pred: predicted coordinates (I, B, L, n_atom, 3)
         - true: true coordinates (B, L, n_atom, 3)
+        - mask: mask for calculating loss (B, L, n_atom, 3)
     Output: str loss
     '''
     I = pred.shape[0]
@@ -37,8 +38,13 @@ def calc_str_loss(pred, true, A=20.0, gamma=0.95):
     t_ij = get_t(pred[:,:,:,0], pred[:,:,:,1], pred[:,:,:,2])
     
     difference = torch.norm(t_tilde_ij-t_ij,dim=-1) # (I, B, L, L)
-    loss = -(torch.nn.functional.relu(1.0-difference/A)).mean(dim=(1,2,3)) # (I)
-    
+    temp_mask = torch.full_like(difference, 0, device=pred.device)
+    temp_mask[:,:,:,str_mask[0,:]] = 1
+    temp_mask[:,:,str_mask[0,:],:] = 1
+    loss = -(torch.nn.functional.relu(1.0-difference/A)) * temp_mask ### check why I is 10
+    loss = loss.sum(dim=-1).sum(dim=-1).sum(dim=-1)
+    mask_sum = temp_mask.sum(dim=-1).sum(dim=-1).sum(dim=-1)
+    loss = loss / mask_sum
     # weighting loss
     w_loss = torch.pow(torch.full((I,), gamma, device=pred.device), torch.arange(I, device=pred.device))
     w_loss = torch.flip(w_loss, (0,))
@@ -118,8 +124,8 @@ def calc_dist_rmsd(pred, true, max_dist=40.0, max_error=64.0, log=False, gamma=0
     pred = pred.reshape(I, B, L*n_atom, 3)
     true = true.reshape(B, L*n_atom, 3)
 
-    D_pred = torch.triu(torch.cdist(pred, pred), diagonal=1) # (I, B, L*n_atom, L*n_atom)
-    D_true = torch.triu(torch.cdist(true, true), diagonal=1) # (B, L*n_atom, L*n_atom)
+    D_pred = torch.triu(safe_cdist(pred, pred), diagonal=1) # (I, B, L*n_atom, L*n_atom)
+    D_true = torch.triu(safe_cdist(true, true), diagonal=1) # (B, L*n_atom, L*n_atom)
     mask = (D_true < max_dist)
     mask = torch.triu(mask, diagonal=1)
     #
@@ -148,8 +154,8 @@ def calc_dist_rmsle(pred, true, gamma=0.95, eps=1e-6):
     pred = pred.reshape(I, B, L*n_atom, 3)
     true = true.reshape(B, L*n_atom, 3)
 
-    D_pred = torch.log(torch.triu(torch.cdist(pred, pred), diagonal=1) + 1.0) # (I, B, L*n_atom, L*n_atom)
-    D_true = torch.log(torch.triu(torch.cdist(true, true), diagonal=1) + 1.0) # (B, L*n_atom, L*n_atom)
+    D_pred = torch.log(torch.triu(safe_cdist(pred, pred), diagonal=1) + 1.0) # (I, B, L*n_atom, L*n_atom)
+    D_true = torch.log(torch.triu(safe_cdist(true, true), diagonal=1) + 1.0) # (B, L*n_atom, L*n_atom)
     mask = torch.ones_like(D_true[0])
     mask = torch.triu(mask, diagonal=4)
     n_pair = mask.sum()
@@ -225,78 +231,107 @@ def torsion(a,b,c,d, eps=1e-6):
     
     cos_sin = torch.cat([cos_angle, sin_angle], axis=-1)/(t1_norm*t2_norm+eps) #[B,L,2]
     return cos_sin
-
-def calc_BB_bond_geom(pred, true, eps=1e-6):
+    
+def calc_BB_bond_geom(pred, true, bond_mask, eps=1e-6):
     '''
     Calculate backbone bond geometry (bond length and angle) and put loss on them
     Input:
-     - pred: predicted coords (I, B, L, :, 3), 0; N / 1; CA / 2; C
+     - pred: predicted coords (B, L, :, 3), 0; N / 1; CA / 2; C
      - true: True coords (B, L, :, 3)
+     - bond_mask: 1 = to score, 0 = masked (L-1)
     Output:
      - bond length loss, bond angle loss
     '''
-    I, B, L = pred.shape[:3]
-    pred = pred.view(I*B, L, -1, 3)
-
+    B, L = pred.shape[:2]
     # bond length: N-CA, CA-C, C-N
-    #blen_NCA_pred = length(pred[:,:,0], pred[:,:,1]).reshape(I, B, L) # (I, B, L)
-    #blen_CAC_pred = length(pred[:,:,1], pred[:,:,2]).reshape(I, B, L)
-    blen_CN_pred  = length(pred[:,:-1,2], pred[:,1:,0]).reshape(I,B,L-1) # (I, B, L-1)
+    #blen_NCA_pred = length(pred[:,:,0], pred[:,:,1]).reshape(B, L) # (B, L)
+    #blen_CAC_pred = length(pred[:,:,1], pred[:,:,2]).reshape(B, L)
+    blen_CN_pred  = length(pred[:,:-1,2], pred[:,1:,0]).reshape(B,L-1) # (B, L-1)
     
     #blen_NCA_true = length(true[:,:,0], true[:,:,1]) # (B, L)
     #blen_CAC_true = length(true[:,:,1], true[:,:,2])
     blen_CN_true  = length(true[:,:-1,2], true[:,1:,0]) # (B, L-1)
+    blen_CN_true[~bond_mask[:,0,:-1]] = 3.01 # hacky way of doing this, making residues that shouldn't be scored > 3.0.
+    blen_CN_true[~bond_mask[:,0,1:]] = 3.01 #slide back so mask out all residues affected by masked residues
     mask_CN = blen_CN_true < 3.0
-
     blen_loss = 0.0
-    #blen_loss += torch.sqrt(torch.square(blen_NCA_pred - blen_NCA_true[None]) + eps).mean()
-    #blen_loss += torch.sqrt(torch.square(blen_CAC_pred - blen_CAC_true[None]) + eps).mean()
-    blen_loss += torch.sqrt(torch.square(blen_CN_pred  - blen_CN_true[None])*mask_CN[None] + eps).sum() / (I*mask_CN.sum())
+    CN_loss = torch.square(blen_CN_pred - blen_CN_true)
+    CN_loss = (CN_loss*mask_CN).sum() / (mask_CN.sum()+eps)
+    blen_loss += torch.sqrt(CN_loss + eps)
 
     # bond angle: N-CA-C, CA-C-N, C-N-CA
-    #bang_NCAC_pred = angle(pred[:,:,0], pred[:,:,1], pred[:,:,2]).reshape(I,B,L,2)
-    bang_CACN_pred = angle(pred[:,:-1,1], pred[:,:-1,2], pred[:,1:,0]).reshape(I,B,L-1,2)
-    bang_CNCA_pred = angle(pred[:,:-1,2], pred[:,1:,0], pred[:,1:,1]).reshape(I,B,L-1,2)
+    #bang_NCAC_pred = angle(pred[:,:,0], pred[:,:,1], pred[:,:,2]).reshape(B,L,2)
+    bang_CACN_pred = angle(pred[:,:-1,1], pred[:,:-1,2], pred[:,1:,0]).reshape(B,L-1,2)
+    bang_CNCA_pred = angle(pred[:,:-1,2], pred[:,1:,0], pred[:,1:,1]).reshape(B,L-1,2)
 
     #bang_NCAC_true = angle(true[:,:,0], true[:,:,1], true[:,:,2])
     bang_CACN_true = angle(true[:,:-1,1], true[:,:-1,2], true[:,1:,0])
     bang_CNCA_true = angle(true[:,:-1,2], true[:,1:,0], true[:,1:,1])
 
     bang_loss = 0.0
-    #bang_loss += torch.sqrt(torch.square(bang_NCAC_pred - bang_NCAC_true[None]).sum(dim=-1) + eps).mean()
-    bang_loss += torch.sqrt(torch.square(bang_CACN_pred - bang_CACN_true[None]).sum(dim=-1) + eps).mean()
-    bang_loss += torch.sqrt(torch.square(bang_CNCA_pred - bang_CNCA_true[None]).sum(dim=-1) + eps).mean()
+    CACN_loss = torch.square(bang_CACN_pred - bang_CACN_true).sum(-1)
+    CACN_loss = (CACN_loss*mask_CN).sum() / (mask_CN.sum()+eps)
+    CNCA_loss = torch.square(bang_CNCA_pred - bang_CNCA_true).sum(-1)
+    CNCA_loss = (CNCA_loss*mask_CN).sum() / (mask_CN.sum()+eps)
+    bang_loss += torch.sqrt(CACN_loss + eps)
+    bang_loss += torch.sqrt(CNCA_loss + eps)
 
     return blen_loss, bang_loss
-
-def calc_pseudo_dih(pred, true, eps=1e-6):
+    
+def calc_pseudo_dih(pred, true, dih_mask, eps=1e-6):
     '''
     calculate pseudo CA dihedral angle and put loss on them
     Input:
     - predicted & true CA coordinates (I,B,L,3) / (B, L, 3)
+    - dih_mask: 1 = unmasked, 0 = masked (L)
     Output:
     - dihedral angle loss
     '''
+
     I, B, L = pred.shape[:3]
+
     pred = pred.reshape(I*B, L, -1)
+
+    #true = true[:,dih_mask[0,0,:],:]
+    #pred = pred[:,dih_mask[0,0,:],:]
+
     true_dih = torsion(true[:,:-3,:],true[:,1:-2,:],true[:,2:-1,:],true[:,3:,:]) # (B, L', 2)
     pred_dih = torsion(pred[:,:-3,:],pred[:,1:-2,:],pred[:,2:-1,:],pred[:,3:,:]) # (I*B, L', 2)
     pred_dih = pred_dih.reshape(I, B, -1, 2)
-    dih_loss = torch.sqrt(torch.square(pred_dih - true_dih[None]).sum(dim=-1) + eps).mean()
+    dih_loss = torch.sqrt(torch.square(pred_dih - true_dih[None]).sum(dim=-1) + eps)
+    
+    #prepare weird offset mask
+    oned_dih_mask = torch.clone(dih_mask[0,0,:])
+    
+    oned_dih_mask1 = torch.cat((oned_dih_mask, torch.ones(3, device = oned_dih_mask.device).bool()), dim=0).unsqueeze(0)
+    oned_dih_mask2 = torch.cat((torch.ones(1, device = oned_dih_mask.device).bool(), oned_dih_mask, torch.ones(2, device = oned_dih_mask.device).bool()), dim=0).unsqueeze(0)
+    oned_dih_mask3 = torch.cat((torch.ones(2, device = oned_dih_mask.device).bool(), oned_dih_mask, torch.ones(1, device = oned_dih_mask.device).bool()), dim=0).unsqueeze(0)
+    oned_dih_mask4 = torch.cat((torch.ones(3, device = oned_dih_mask.device).bool(), oned_dih_mask), dim=0).unsqueeze(0)
+    logic1 = torch.logical_and(oned_dih_mask1, oned_dih_mask2)
+    logic2 = torch.logical_and(logic1, oned_dih_mask3)
+    final_dih_mask = torch.logical_and(logic2, oned_dih_mask4)[:,3:-3]
+    final_dih_mask = final_dih_mask.repeat(10,1,1)
+    dih_loss = dih_loss * final_dih_mask
+    dih_loss = dih_loss.sum() / (final_dih_mask.sum() + eps)   
+    
     return dih_loss
 
 
-def calc_lddt_loss(pred_ca, true_ca, pred_lddt, idx, eps=1e-6):
-    # Input
-    # pred_ca: predicted CA coordinates (I, B, L, 3)
-    # true_ca: true CA coordinates (B, L, 3)
-    # pred_lddt: predicted lddt values (I-1, B, L)
-
+def calc_lddt_loss(pred_ca, true_ca, pred_lddt, idx, lddt_mask, eps=1e-6):
+    '''
+    Input
+    pred_ca: predicted CA coordinates (I, B, L, 3)
+    true_ca: true CA coordinates (B, L, 3)
+    pred_lddt: predicted lddt values (I-1, B, L)
+    lddt_mask: mask for loss (L)
+    '''
+    lddt_mask = lddt_mask[:,0,:]
+    temp = random.randint(0,10)
     I, B, L = pred_ca.shape[:3]
     seqsep = torch.abs(idx[:,None,:] - idx[:,:,None]).unsqueeze(0)
     
-    pred_dist = torch.cdist(pred_ca, pred_ca) # (I, B, L, L)
-    true_dist = torch.cdist(true_ca, true_ca).unsqueeze(0) # (1, B, L, L)
+    pred_dist = safe_cdist(pred_ca, pred_ca) # (I, B, L, L)
+    true_dist = safe_cdist(true_ca, true_ca).unsqueeze(0) # (1, B, L, L)
 
     mask = torch.logical_and(true_dist > 0.0, true_dist < 15.0) # (1, B, L, L)
     #mask = torch.logical_and(mask, seqsep > 11)
@@ -305,6 +340,6 @@ def calc_lddt_loss(pred_ca, true_ca, pred_lddt, idx, eps=1e-6):
     true_lddt = torch.zeros((I,B,L), device=pred_ca.device)
     for distbin in [0.5, 1.0, 2.0, 4.0]:
         true_lddt += 0.25*torch.sum((delta<=distbin)*mask, dim=-1) / (torch.sum(mask, dim=-1) + eps)
-    #diff = torch.abs(pred_lddt - true_lddt) # (I, B, L)
-    diff = torch.square(pred_lddt - true_lddt[-1]) # (I, B, L)
-    return diff.mean(), true_lddt.mean(dim=(1,2))
+    diff = torch.square(pred_lddt - true_lddt[-1]) # (I, B, L-1)
+    diff = diff * lddt_mask 
+    return diff.sum() / (lddt_mask.sum() + eps), true_lddt.mean(dim=(1,2))

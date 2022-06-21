@@ -1,8 +1,12 @@
+import gc
+from icecream import ic
 import sys
+import random
+from timeit import default_timer as timer
 
 import numpy as np
 import torch
-#from icecream import ic 
+from icecream import ic 
 
 num2aa=[
     'ALA','ARG','ASN','ASP','CYS',
@@ -13,13 +17,12 @@ num2aa=[
 
 aa2num= {x:i for i,x in enumerate(num2aa)}
 
-alpha_1 = list("ARNDCQEGHILKMFPSTWYV-")
-aa_N_1 = {n:a for n,a in enumerate(alpha_1)}
-aa_1_N = {a:n for n,a in enumerate(alpha_1)}
-
-aa123 = {aa1: aa3 for aa1, aa3 in zip(alpha_1, num2aa)}
-aa321 = {aa3: aa1 for aa1, aa3 in zip(alpha_1, num2aa)}
-
+aa1to3 =  \
+    {'C': 'CYS', 'D': 'ASP', 'S': 'SER', 'Q': 'GLN', 'K': 'LYS',
+     'I': 'ILE', 'P': 'PRO', 'T': 'THR', 'F': 'PHE', 'N': 'ASN',
+     'G': 'GLY', 'H': 'HIS', 'L': 'LEU', 'R': 'ARG', 'W': 'TRP',
+     'A': 'ALA', 'V':'VAL', 'E': 'GLU', 'Y': 'TYR', 'M': 'MET',
+     'X': 'UNK'}
 
 # minimal sc atom representation (Nx8)
 aa2short=[
@@ -95,7 +98,6 @@ aa2longalt=[
 
 
 # build "deterministic" atoms
-# see notebook (se3_experiments.ipynb for derivation)
 aa2frames=[
     [], # ala
     [   # arg
@@ -204,65 +206,113 @@ for i in range(20):
 
 def atoms_from_frames(base,parent,gparent,points):
     xs = parent-base
-
-    # handle parent==base
-    mask = (torch.sum(torch.square(xs),dim=-1)==0)
-    xs[mask,0] = 1.0
     xs = xs / torch.norm(xs, dim=-1)[:,None]
-
     ys = gparent-base
     ys = ys - torch.sum(xs*ys,dim=-1)[:,None]*xs
-
-    # handle gparent==base
-    mask = (torch.sum(torch.square(ys),dim=-1)==0)
-    ys[mask,1] = 1.0
-
     ys = ys / torch.norm(ys, dim=-1)[:,None]
     zs = torch.cross(xs,ys)
     q = torch.stack((xs,ys,zs),dim=2)
-
-    retval = base + torch.einsum('nij,nj->ni',q,points)
-
-    return retval
-#def atoms_from_frames(base,parent,gparent,points):
-#    xs = parent-base
-#    # handle parent=base
-#    mask = (torch.sum(torch.square(xs), dim=-1) == 0)
-#    xs[mask,0] = 1.0
-#    xs = xs / torch.norm(xs, dim=-1)[:,None]
-#
-#    ys = gparent-base
-#    # handle gparent=base
-#    mask = (torch.sum(torch.square(ys),dim=-1)==0)
-#    ys[mask,1] = 1.0
-#
-#    ys = ys - torch.sum(xs*ys,dim=-1)[:,None]*xs
-#    ys = ys / torch.norm(ys, dim=-1)[:,None]
-#    zs = torch.cross(xs,ys)
-#    q = torch.stack((xs,ys,zs),dim=2)
-#    #return base + q@points
-#    return base + torch.einsum('nij,nj->ni',q,points)
+    #return base + q@points
+    return base + torch.einsum('nij,nj->ni',q,points)
 
 # writepdb
-def writepdb(filename, atoms, bfacts, seq, pdb_idx=None):
+N_BACKBONE_ATOMS = 3
+def writepdb(filename, atoms, bfacts, seq, backbone_only=False, chain_ids=None):
     f = open(filename,"w")
 
     ctr = 1
-    Bfacts = np.clip( bfacts, 0, 1)
-
-    if pdb_idx is None:
-        pdb_idx = [('A', i+1) for i in range(len(seq))]
-
-    idx = np.arange(len(seq))
-
-    for i, (ch,i_pdb),s in zip(idx, pdb_idx, seq):
+    scpu = seq.cpu()
+    ic(len(scpu))
+    atomscpu = atoms.cpu()
+    Bfacts = torch.clamp( bfacts.cpu(), 0, 1)
+    for i,s in enumerate(scpu):
         atms = aa2long[s]
         for j,atm_j in enumerate(atms):
-            if(j > 2):
-                break # NOTE: DJ BREAK HERE TO ONLY WRITE BB ATOMS 
-            if (atm_j is not None):
-                f.write ("%-6s%5s %4s %3s %s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f\n"%(
-                    "ATOM", ctr, atm_j, num2aa[s], 
-                    ch, i_pdb, atoms[i,j,0], atoms[i,j,1], atoms[i,j,2],
-                    1.0, Bfacts[i] ) )
-                ctr += 1
+
+            if backbone_only and j >= N_BACKBONE_ATOMS:
+                break
+            if (atm_j is None) or (torch.all(torch.isnan(atomscpu[i,j]))):
+                continue
+            chain_id = 'A'
+            if chain_ids is not None:
+                chain_id = chain_ids[i]
+            f.write ("%-6s%5s %4s %3s %s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f\n"%(
+                "ATOM", ctr, atm_j, num2aa[s], 
+                chain_id, i+1, atomscpu[i,j,0], atomscpu[i,j,1], atomscpu[i,j,2],
+                1.0, Bfacts[i] ) )
+            ctr += 1
+
+
+
+def assert_no_nan(t):
+    if torch.any(torch.isnan(t)):
+        ic(t)
+        ic(t.shape)
+        ic(torch.isnan(t).nonzero())
+        raise Exception('nans found')
+
+def make_deterministic(seed=0):
+        torch.manual_seed(seed)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        np.random.seed(seed)
+        random.seed(seed)
+
+class Timer:
+    def __init__(self, name):
+        self.name = name
+        self.last = None
+        self.elapsed = 0
+    def tick(self):
+        now = timer()
+        if self.last is not None:
+            self.elapsed = now - self.last
+        self.last = now
+
+    def format(self):
+        return f'Timer {self.name}: {self.elapsed:.3f}'
+
+    def tick_and_print(self, msg=''):
+        self.tick()
+        out = ''
+        if msg:
+            out = msg + ': '
+        out += self.format()
+        print(out)
+
+def garbage_collect_tensors():
+    tensors = []
+    for obj in gc.get_objects():
+        try:
+            if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+                if obj.is_cuda:
+                    tensors.append(obj)
+        except:
+            pass
+    return tensors
+
+def tensor_memory(t):
+    return t.element_size() * t.nelement()
+
+def format_tensors(tensors):
+    msgs = []
+    for t in tensors:
+        msgs.append(f'Size: {tensor_memory(t)}, Memory: {sys.getsizeof(t) / 1024 / 1024 / 1024} Gb')
+    return '\n'.join(msgs)
+
+def memory_snapshot():
+    msg = ''
+    msg += torch.cuda.memory_summary() + '\n'
+    msg += 'Garbage collected tensors:\n' + format_tensors(garbage_collect_tensors())
+    return msg
+
+# Sets the default cdist compute_mode to 'use_mm_for_euclid_dist' to
+# preserve memory contiguity for backpropagation.
+def monkey_patch_cdist():
+    def wrap(original):
+        def safe_cdist(*args, **kwargs):
+            print('in safe_cdist')
+            return original(*args, **{**{'compute_mode': 'use_mm_for_euclid_dist'}, **kwargs})
+        return safe_cdist
+    torch.cdist = wrap(torch.cdist)
+

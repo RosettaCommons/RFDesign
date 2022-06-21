@@ -1,129 +1,201 @@
-# RosettaFold joint seq-str modelling + inpainting script 
-David Juergens (davidcj@uw.edu)    
-Jue Wang (jue@uw.edu)    
-Sidney Lisanza (lisanza@uw.edu)    
-Joe Watson (jwatson3@uw.edu)
+# Protein Inpainting
 
-## Installation
+Codes for running Protein Inpainting developed by Joe Watson and David Juergens 
 
-See instructions in `rfdesign/README.md`
+## Description 
 
-## Usage
+Protein inpainting is a method for "conditional joint protein
+sequence/structure generation". This means that given some combination of
+protein sequence and structure that you have, you can use this method to
+simultaneously generate more sequence and structure conditioned on that input. 
 
-Remove residues 20-25 from chain A of 2KL8.pdb and rebuild their structure and sequence,
-using 10 iterations of recycling the structure, outputting 1 design to `output/`.
+**Things inpainting is good at:**
 
-    conda activate SE3
-    python inpaint.py --task hal --checkpoint v02 --pdb=input/2KL8.pdb --out=output/inpaint_test \
-                      --window=A,20,25 --num_designs 1 \
-                      --inf_method=multi_shot --n_iters 10 --recycle_str_mode both \
-                      --clamp_1d 0.1 --dump_all
+- Refining non-ideal parts of proteins 
+- Resampling protein structures near a starting structure 
+- Re-looping proteins (i.e., keep tertiary/secondary structure but changing the
+  order in which elements appear in sequence space)
+- Rigidly fusing two protein domains 
+- Loop building 
+- Scaffolding medium-sized motifs
 
-The above command should actually run if you start in the working folder `test/` (and run `../inpaint.py`).
+**Things that are currently challenging with inpainting:**
+- Generating large amounts of protein from very little or no protein structure
+  (it's worth a try, but don't expect whole proteins to come out consistently) 
+- Inpainting with excluded volumes (though it can be done)
 
+## Usage 
 
-## Output
+In this section we will demonstrate how to run inpainting. 
 
-By default, only a .trb file of metadata will be output for each design, and a
-.csv for sequence recovery for all designs. Use these flags to generate other
-per-design outputs:
+The actual script you will execute is called `inpaint.py`. There are many ways
+to run it, which we will explore through examples below. 
 
-  - `--dump_pdb`: pdb file of the generated backbone
-  - `--dump_npz`: npz file with 6D predictions for pyrosetta folding or relax.
-  - `--dump_fas`: fasta file with designed sequence, with '/' delimiting chains.
-  - `--dump_all`: output all of the above
+### Basic execution
 
-When the output has more than one chain, an additional \<prefix\>_two_chain.npz
-file is output that contains permuted dimensions for compatibility with the
-`BFF/design/postprocess/fold_complex.sh` folding script. (See README in that
-folder).
+A baseline execution of the script requires 3 pieces of
+information, which are provided in the form of flags coming in from the command
+line that you provide. The three things are 
 
-Post-processing and analysis can be done using the scripts in
-`rfdesign/scripts/`. See README there for details.
+1. A template protein structure/sequence, in the form of a pdb file. (`--pdb`)
 
-## RoseTTAFold checkpoints
+2. Specification of which parts of the protein are being kept, removed, and
+inpainted. This is provided as a "contigs string". (`--contigs`) 
 
- - v00: RoseTTAFold trained on fixed-backbone sequence design task (i.e.
-   backbone structure + masked sequence input, sequence output logits loss)
- - v01: RoseTTAFold trained on fixed-backbone sequence design and seq/struc inpainting (mask and recover both sequence and structure)
- - v02: RoseTTAFold trained on fixed-backbone sequence design, seq/struc inpainting, and seq/struc inpainting with masked flanking residues.
+3. A location where output from the script should be written. (`--out`)
 
-In general, v02 has the best performance, but for some problems v00 may be
-better. v01 usually is inferior to v00 and v02.
+```
+python inpaint.py --pdb 2KL8.pdb --contigs A25-50,10,A61-79 --out pdbs_test/auto_out 
+```
 
+The first flag denotes that the pdb file `2KL8.pdb` will be used as the source for any template protein information we want to scaffold. 
 
-## Specifying masked versus kept residues
+The second flag is the contigs string, which says a few things:
+- The A25-50 denotes the first contiguously *kept* region ("contig") - meaning
+  that we are essentially going to copy the sequence and structure of all
+  residues from A25 to A50 in `2KL8.pdb` (inclusive). Since `A25` comes first
+  in the contigs string, it will be the first residue in the output protein.
+  Note that even though `2KL8.pdb` also contains residues A1-24, they will not
+  be considered during design because they are not in the contigs string.  
+- The `,10` denotes that *directly* attached to `A1-25` there will be 10
+  inpainted residues, where both sequence and structure will be generated. 
+- The `,A61-79` denotes that *directly* attached to the 10-residue inpainted
+  region we will have residues `A61-79` from `2KL8.pdb`.  
 
-The `--window` option specifies regions to mask (remove and replace). e.g.
-`--window A,1,5:B,24,36` will rebuild residues 1-5 (inclusive) on chain A and
-residues 24-36 on chain B.
+Finally, the last flag denotes where output will go. This is always in the form
+`path/to/my/outdir/prefix` - that is, it begins with the path to a folder, and
+the last bit denotes the prefix that all files will be tagged with when they go
+into that folder. The standard files which are output is a `.pdb` file for each
+design, allong with a metadata `.trb` file which contains information about how
+your contigs ("kept regions") were mapped from the input protein to the output
+protein, the RoseTTAFold pLDDT predictions, etc. 
 
-The `--contigs` option specifies regions to keep (and to build the rest of the
-protein). The kept regions ("contigs") are also placed randomly into a *new*
-protein of a certain length.
+**NOTE:** within a given design run with `inpaint.py`, any files being output
+into your output direectory will not clobber each other because each individual
+design will be tagged with a unique ID number. But designs from separate runs
+can clobber each other. 
 
-  - `--contigs A5-10,A25-40 --len 100` will put the contiguous regions A5-10
-    and A25-40 randomly into a new protein of length 100 (and build the rest of
-    that protein).
+## Understanding the --contigs flag in depth.
 
-    By default, the order of contigs is randomized in the new protein. Set
-    `--keep_order` to avoid this. By default, the minimum number of residues
-    between contigs is 3.  Set `--min_gap` to change this.
+1. Variable length inpainting. In many cases, you don't know the exact number
+of residues needed to fill a gap. Therefore, you can specify a range, e.g.
+`A25-50,7-13,A61-79`. This will allow between 7 and 13 (inclusive) residues to
+be inpainted. However, there is no 'intelligent' sampling here - the length is
+currently just randomly sampled from the given range. Therefore, you'll need to
+run multiple inpainting runs to sample this range, with e.g. `--num_designs 3`
 
-  - `--contigs 5,A5-10,7-9,A25-40,0-4` will put a masked region of length 5,
-    then the region A5-10 from the input pdb, then a masked region of length
-    7-9 (inclusive, sampled uniformly randomly for each design), then A25-40
-    from the input, then a masked region of 0-4.  This does not require a
-    `--len` argument because the total length is the sum of all the sampled
-    masked regions and the contigs. The order of the contigs is maintained. 
+2. Inpainting in the presence of another, fixed chain. Sometimes, you'll want
+to inpaint in the presence of another chain, e.g. a receptor that you want to
+inpaint a binder against. This can be specified by including the receptor in
+the input pdb and including the `--receptor_chain` flag. Currently this script
+only supports one receptor chain -- if you have multiple receptor subunits you
+can put them on the same chain, with a 200-residue index gap to allow
+RosettaFold to predict them as separate chains.
 
-    To rebuild a loop in residues 5-10 of the an input protein of length 100,
-    but have it vary in length in the output between 4-8 AAs:
+3. Fusing multiple chains. Your 'visible' parts of structure can be linked
+together with inpainting, even if they're on separate chains in the input file.
+E.g. `A25-50,15-25,B1-50` will fuse part of the 'A' chain to part of the 'B'
+chain.
 
-        ./inpaint.py --contigs A1-4,4-8,A11-100 ...
+## Understanding the outputs
 
-If using `--contigs` and you want to design in the context of a receptor from
-the input, specify the chain letter of the receptor with `--receptor_chain`.
+1. The PDB file. Any scaffolded motifs will end up on chain A. If you included
+a receptor chain, that will be output on chain B.
 
+2. The trb file. This contains metadata about the inpainting run. Open this
+with np.load([File], allow_pickle=True).
+    - `lddt`- This is the inpainting network's prediction at how 'good' the
+      output structure is. This is per residue, and includes all of the
+      unmasked region.
+    - `inpaint_lddt` - This is just the part of the 'lddt' output corresponding
+      to the inpainted region. Normally, we filter on the mean of this output,
+      to take the 'best' ~5-10% of outputs.
+    - details about mapping (i.e. how residues in the input map to residues in
+      the output)
+        - `con_ref_pdb_idx`/`con_hal_pdb_idx` - These are two arrays including
+          the input pdb indices (in con_ref_pdb_idx), and where they are in the
+          output pdb (in con_hal_pdb_idx). This only contains the chains where
+          inpainting took place (i.e. not any fixed receptor/target chains)
+        - `con_ref_idx0`/`con_hal_idx0` - These are the same as above, but 0
+          indexed, and without chain information. This is useful for splicing
+          coordinates out (to assess alignment etc).
+        - `complex_con...` and `receptor_con...` - If you have included fixed
+          receptor/target chains, these will be included either on their own
+          (in receptor_con...) or with the inpainted chains (in
+          complex_con...).
+        - `sampled_mask` - if you've specified a range of lengths to be
+          inpainted, this `sampled_mask` will give the precise length used
+          during that specific inpainting run
 
-## Prediction modes
+3. The .npz file. This contains the predicted pairwise distances and
+orientation angles from RosettaFold. This is used as an input to the
+`trfold_relax.sh` script to add sidechains and refine the structure further.
+However, if you simply plan to make an AlphaFold2 prediction of the design (as
+we often do), the npz isn't needed.
 
-`--inf_method` controls how the script builds the masked regions:
+## Other flags
 
-  - `--one_shot` predicts all masked positions in 1 forward pass. Output
-    sequence is the argmax of the predicted sequence logits.
+- `--inpaint_seq`: This allows the sequence of residues to be masked, while the
+  backbone coordinates are given. This is handy if you're, for example, making
+  a fusion between two monomeric proteins, and part of what was the surface is
+  now going to be in the core of the protein. This is specified similarly to
+  the contig string, but without chain breaks (e.g. `A1-3,A4,A6,B10-100`)
+- `--inpaint_str`: This allows the structure of a residue to be masked, but not
+  its sequence. This essentially asks the network to predict the structure of
+  this residue.
+- `--res_translate`: Which residues to translate (randomly in x, y and z
+  direction), with maximum distance to translate specified, e.g. `A35,2:B22,4`
+  translates residue A35 up to 2A in a random direction, and B22 up to 4A. If
+  specified residues are in masked --window, they will be unmasked. In --contig
+  mode, residues must not be masked (as need to know where to put them. Default
+  distance to translate is 2A.
+- `--tie_translate`: For randomly translating multiple residues together (e.g.
+  to move a whole secondary structure element). Syntax is e.g.
+  `A22,A27,A30,4.0:A48,A50` which would randomly move residues A22, A27 and A30
+  together up to 4A, and A48 and A50 together (but in a different random
+  direction/distance to the first block) to a default distance of up to 2A.
+  Alternatively, residues can be specifed like `A12-26,6.0:A40-52,A56`. This
+  can be specified alongside --res_translate, so some residues are tied, and
+  some are not, but if residues are specified in both, they will only be moved
+  in their tied block (i.e. their --res_translate will be ignored)
+- `--block_rotate`: Do you want to rotate a whole structural block (or single
+  residue)? Syntax is same as tie_translate. Rotation is in degrees.
+- `--num_designs`: Number of designs (inpaints) to generate. Note INPAINTING IS
+  DETERMINISTIC. Therefore, you need at least as many possible input
+  combinations (e.g. lengths of inpainted regions etc) to generate actual
+  diversity. Otherwise, identical inputs in = identical inputs out (and a LOT
+  of wasted compute)
 
-  - `--multi_shot` predicts all masked positions in `--n_iters` forward passes.
-    After the 1st pass, the entire predicted structure is fed as the template
-    for the subsequent pass, and 1d template features are the residue-wise
-    predicted lDDTs. Use `--clamp_1d` to limit how high these can get, and
-    `--local_clamp` to only clamp at masked positions. Output sequence is the
-    argmax of the predicted sequence logits at the end. 
+All other flags can generally be left as default, but either dive into the code
+or ask us if you have any questions.
 
-  - `--autoregressive` predicts all masked positions, sets the N-term-most
-    masked residue to the AA sampled from the logits with temperature
-    `--autoreg_T`, predicts all remaining positions, and so on until all masked
-    positions have been assigned a sequence. Returns the structure and sequence
-    predicted on the last forward pass. Structure of masked region is masked
-    the entire time.
+## FAQs
 
+1. 'How much protein can inpainting inpaint?' 
 
-## Command-line options
+This depends on the problem, but generally it will struggle with inpainting
+more than around 60 residues. If you have multiple regions to be inpainted
+(between visible blocks), the total amount of protein to be inpainted could be
+quite a lot more than this though (if each segment was say, around 50
+residues).
 
-    --task      : which task are you performing in the window? Options are 'seq' (sequence design), 'str' (structure prediction), 'hal' (hallucination, aka structure and sequence inpainting), or 'den' (denoising). 
+2. 'I see chain breaks/clashes in my pdb output'
 
-    --window    : residue indices to remove sequence and structure information from. A colon-separated list of start,end of window.
-                    E.g., `--window 1,5:10,20:45,47` tells the algorithm to remove information from residues (indexed in the PDB file) 1 through 5, 
-                            10 through 20, and 45 through 47. 
-    --res_translate : physically move individual residues by up to a maximum distance, in any direction. 
-                    E.g., `--res_translate A35,2:B22,4` translates residue A35 up to 2A in a random direction, and B22 up to 4A.
-                            If no distance is provided, default distance is 2A. Translation is different for each of --num_designs
-    --pdb       : path to pdb file you want to use 
+Inpainting often fails, probably because the set of lengths given to the
+network during that run were incompatible with making a good protein (at least
+with inpainting). These designs will generally have a low mean 'inpaint_lddt'
+metric though, so if you only take the top-scoring 10% or so of designs, these
+shouldn't have bad clashes etc.
 
-    --n_iters   : How many iterations do you want to do with multi-shot prediction 
+3. 'What is a good cutoff for the mean 'inpaint_lddt' score?
 
-    --dump_pdb  : If this flag appears, will dump pdb of resulting structure + ORIGINAL sequence (need to fix this, will do it soon)
+The raw value for this depends on a range of factors, so will vary
+problem-by-problem. Normally, I just visually inspect a few outputs with a
+range of 'inpaint_lddt' metrics, and choose a cutoff based on this. Or, I just
+take the top-scoring 10% of outputs.
 
-    --outf     : Folder to dump output 
-    
-    --checkpoint : which checkpoint to use (options are v00, v01 or v02). Some evidence that v02 (Joe's model) performs better than previous models. 
+## Authors and acknowledgment
+
+This work was developed by Joseph Watson (jwatson3@uw.edu), David Juergens
+(davidcj@uw.edu), Jue Wang (jue@uw.edu) and Woody Ahern (ahern@uw.edu)
+

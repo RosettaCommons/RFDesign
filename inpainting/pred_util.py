@@ -42,7 +42,7 @@ def get_mask(args, parsed_pdb, chain_idx_gap=500):
     Parameters
     ----------
         args : argparse.Namespace
-            Parsed command-line arguments, in particular the variables: window, contigs, len, keep_order, min_gap, receptor_chain.
+            Parsed command-line arguments, in particular the variables: window, contigs, receptor_chain.
         parsed_pdb : dict
             Output of parse_pdb command, in particular the key pdb_idx.
             
@@ -122,16 +122,7 @@ def get_residue_map(args, parsed_pdb):
     
     contig_list = []
     for L_range, con in zip(args.len, args.contigs):
-        # CASE 1: Contigs need to be scattered
-        if all([x[0].isalpha() for x in con.split(',')]):
-            _, mappings = contigs.scatter_contigs(contigs=con, 
-                                                  pdb_out=parsed_pdb, 
-                                                  L_range=L_range, 
-                                                  keep_order=args.keep_order, 
-                                                  min_gap=args.min_gap)
-        # CASE 2: Gaps need to be sampled
-        else:
-            _, mappings = contigs.apply_mask(con, parsed_pdb)
+        _, mappings = contigs.apply_mask(con, parsed_pdb)
             
         contig_list.append(mappings['sampled_mask'])
             

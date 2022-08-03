@@ -20,14 +20,14 @@ All code and neural network weights are open source under the BSD license. See `
 1. Clone the repository:
 ```
     git clone https://github.com/RosettaCommons/RFDesign.git
-    cd rfdesign
+    cd RFDesign
 ```
 
 2. Create environment and install dependencies:
 
 ```
     cd envs
-    conda env create -f SE3.yml
+    conda env create -f SE3-nvidia.yml
 ```
 
 3. Download weights (this step can be skipped if you downloaded the Zenodo version of this repo):

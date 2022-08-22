@@ -29,7 +29,7 @@ p.add_argument('--out', help='Output file name. Default: interface_metrics.csv')
 args = p.parse_args()
 if args.out is None: args.out = os.path.join(args.data_dir, 'interface_metrics.csv')
 
-init('-corrections::beta_nov16 -holes:dalphaball /software/rosetta/DAlphaBall.gcc -detect_disulf false')
+init('-corrections::beta_nov16 -holes:dalphaball /software/rosetta/DAlphaBall.gcc -detect_disulf false -run:preserve_header true')
 parser = RosettaScriptsParser()
 protocol = parser.generate_mover(script_dir+"/interface_metrics.xml")
 

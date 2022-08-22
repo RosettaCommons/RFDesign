@@ -699,23 +699,28 @@ def main():
 
         # parse optimization stages
         stages = [(i, x[0], int(x[1:])) for i,x in enumerate(args.steps.split(','))]
+        
+        try:
+            for i_stage, opt_type, steps in stages:
+                #bug here: if g is last step and doesn't give scores lower than best scoring from m; key error for loss print in line 712 (remove comment when fixed)
+                print(f'Stage {i_stage}')
 
-        for i_stage, opt_type, steps in stages:
-            #bug here: if g is last step and doesn't give scores lower than best scoring from m; key error for loss print in line 712 (remove comment when fixed)
-            print(f'Stage {i_stage}')
-
-            if opt_type == 'g':
-                msa, net_out = optimization.gradient_descent(steps, Net, ml, input_logits, 
-                                                         args, trb, trk, net_kwargs)
-                if msa is None: #if ended before cutoff
-                    print("ended trajectory early")
-                    break
-                    
-            elif opt_type == 'm': 
-                if 'msa' not in locals(): # when mcmc is the first optimization stage
-                    msa = torch.argmax(input_logits, -1).detach().cpu().numpy()
-                msa, out = optimization.mcmc(steps, Net, ml, msa, args, trb, trk, net_kwargs, 
-                                         sm=sm, pdb=pdb)
+                if opt_type == 'g':
+                    msa, net_out = optimization.gradient_descent(steps, Net, ml, input_logits, 
+                                                            args, trb, trk, net_kwargs)
+                    if msa is None: #if ended before cutoff
+                        print("ended trajectory early")
+                        break
+                        
+                elif opt_type == 'm': 
+                    if 'msa' not in locals(): # when mcmc is the first optimization stage
+                        msa = torch.argmax(input_logits, -1).detach().cpu().numpy()
+                    msa, out = optimization.mcmc(steps, Net, ml, msa, args, trb, trk, net_kwargs, 
+                                            sm=sm, pdb=pdb)
+            
+        except Exception as error:
+            print(f"Design {in_prefix} failed due to the following error during optimization: {error}...\nStarting next design")
+            continue
 
         #####################################################
         # Output best design

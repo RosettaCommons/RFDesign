@@ -1,5 +1,4 @@
-#!/home/jue/.conda/envs/ampere/bin/python                                                 
-
+#!/software/conda/envs/pyrosetta/bin/python3.7
 import os
 import mock
 import numpy as np
@@ -12,6 +11,7 @@ from collections import OrderedDict
 
 from timeit import default_timer as timer
 import argparse
+import pickle
 
 import io
 from Bio import PDB
@@ -19,7 +19,7 @@ from Bio.PDB.Polypeptide import PPBuilder
 from Bio.PDB import PDBParser
 from Bio.PDB.mmcifio import MMCIFIO
 
-sys.path.insert( 0, '/home/nrbennet/software/dl/af2/alphafold' )
+sys.path.insert( 0, '/home/biolib/RFDesign/hallucination/models/alphafold' )
 
 import scipy
 
@@ -37,7 +37,7 @@ from alphafold.model import config
 from alphafold.model import model
 from alphafold.data.tools import hhsearch
 
-sys.path.append( '/home/nrbennet/software/silent_tools' )
+sys.path.append( '/software/silent_tools' )
 import silent_tools
 
 # Run with Nate's ampere environment
@@ -74,7 +74,7 @@ model_config.model.global_config.mixed_precision = False
 model_config.data.common.max_extra_msa = 5
 model_config.data.eval.max_msa_clusters = 5
 
-model_params = data.get_model_haiku_params(model_name=model_name, data_dir="/projects/ml/alphafold") # CHANGE THIS (directory where "params/ folder is")
+model_params = data.get_model_haiku_params(model_name=model_name, data_dir="/software/mlfold/alphafold-data") # CHANGE THIS (directory where "params/ folder is")
 model_runner = model.RunModel(model_config, model_params)
 
 def get_seq_from_pdb( pdb_fn ):
@@ -228,22 +228,46 @@ def template_from_struct( pdbfilename, seq_list ):
 
 def insert_chainbreaks( pose, binderlen ):
 
+    #pickle.dump(pose, open('pose.pkl', 'wb'))
+
+    print("Pose: ", pose)
+    print("Binderlen: ", binderlen)
+
+    print("Creating conformation")
     conf = pose.conformation()
+
+    print("Conf: ", conf)
+
+    print("Inserting chain ending")
     conf.insert_chain_ending( binderlen )
+
+    print("Conf with chain ending: ", conf)
+
+    print("Setting new conformation")
     pose.set_new_conformation( conf )
 
+    print("Pose with new conf: ", pose)
+
+    print("Number of chains: ", pose.num_chains())
+
+    print
+
+    print("Splitting by chain")
     splits = pose.split_by_chain()
+
+    print(splits)
  
     newpose = splits[1]
     for i in range( 2, len( splits )+1 ):
+        print("Appending pose by jump ", i)
         newpose.append_pose_by_jump( splits[i], newpose.size() )
- 
+
+    print("Getting PDB info")
     info = core.pose.PDBInfo( newpose, True )
+    print("Setting PDB info")
     newpose.pdb_info( info )
 
     return newpose
-
-    return final_dict
 
 def get_final_dict(score_dict, string_dict):
     print(score_dict)
@@ -392,7 +416,7 @@ def unpack_batches( tags, binderlen_dict, start, feature_dict_dict, prediction_r
         with open(unrelaxed_pdb_path, 'w') as f: f.write(unrelaxed_pdb_lines)
         
         score_dict = generate_scoredict( outtag, start, binderlen_dict[tag], confidence_metrics[tag], scorefilename )
-
+        print("Adding to silent")
         add2silent( outtag, unrelaxed_pdb_path, score_dict, binderlen_dict[tag], sfd_out ) 
         os.remove( unrelaxed_pdb_path )
 
@@ -406,17 +430,24 @@ def insert_truncations(residue_index, Ls):
     return residue_index
 
 def add2silent( tag, pdb, score_dict, binderlen, sfd_out ):
+    print("Getting pose from file")
     pose = pose_from_file( pdb )
 
+    print("Inserting Chainbreaks")
     pose = insert_chainbreaks( pose, binderlen )
 
+    print("Creating Struct")
     struct = sfd_out.create_SilentStructOP()
     struct.fill_struct( pose, tag )
 
     for scorename, value in score_dict.items():
+        print("Adding energy: ", scorename, value)
         struct.add_energy(scorename, value, 1)
 
+    print("Adding Structure")
     sfd_out.add_structure( struct )
+
+    print("Writing silent Structure")
     sfd_out.write_silent_struct( struct, "out.silent" )
 
 def predict_structure(tags, feature_dict_dict, binderlen_dict, initial_guess_dict, sfd_out, scorefilename, random_seed=0):  
@@ -427,9 +458,13 @@ def predict_structure(tags, feature_dict_dict, binderlen_dict, initial_guess_dic
   model_runner.params = model_params
   
   processed_feature_dict, processed_initial_guess_dict = combine_batches(tags, feature_dict_dict, initial_guess_dict)
+  #prediction_result = model_runner.apply(model_runner.params, jax.random.PRNGKey(0), processed_feature_dict) #processed_initial_guess_dict)
 
-  prediction_result = jax.vmap(model_runner.apply, in_axes=(None,None,0,0))(model_runner.params,
-          jax.random.PRNGKey(0), processed_feature_dict, processed_initial_guess_dict)
+  # prediction_result = jax.vmap(model_runner.apply, in_axes=(None,None,0,0))(model_runner.params,
+  #         jax.random.PRNGKey(0), processed_feature_dict, processed_initial_guess_dict)
+  
+  prediction_result = jax.vmap(model_runner.apply, in_axes=(None,None,0))(model_runner.params,
+        jax.random.PRNGKey(0), processed_feature_dict)
 
   unpack_batches( tags, binderlen_dict, start, feature_dict_dict, prediction_result, sfd_out, scorefilename ) 
 

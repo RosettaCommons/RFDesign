@@ -29,8 +29,9 @@ import numpy as np
 import pandas as pd
 from collections import OrderedDict
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(script_dir+'/../hallucination/models/alphafold/')
+import sys
+sys.path.append('/home/biolib/RFDesign/hallucination/models/alphafold/')
+
 from alphafold.common import protein
 from alphafold.data import pipeline
 from alphafold.data import templates
@@ -46,7 +47,7 @@ import tensorflow.compat.v1 as tf
 os.environ['TF_FORCE_UNIFIED_MEMORY'] = '1'
 os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION'] = '2.0'
 
-sys.path.append(script_dir+'/../hallucination/util/')
+sys.path.append('/home/biolib/RFDesign/hallucination/util/')
 from parsers import parse_pdb
 from contigs import parse_contigs
 import util
@@ -388,15 +389,15 @@ def main():
                                                    xyz_des[idx_motif].reshape(L_motif*3,3))
             row['contig_rmsd_af2'] = calc_rmsd(xyz_pred[idx_motif].reshape(L_motif*3,3), xyz_ref_motif.reshape(L_motif*3,3))
 
-            if args.interface_res is not None: 
-                idxmap = dict(zip(trb['con_ref_pdb_idx'],trb['con_ref_idx0']))
-                idxmap2 = dict(zip(trb['con_ref_pdb_idx'],trb['con_hal_idx0']))
-                idx_int_ref = [idxmap[i] for i in interface_res if i in trb['con_ref_pdb_idx']]
-                idx_int_hal = [idxmap2[i] for i in interface_res if i in trb['con_ref_pdb_idx']]
-                L_int = len(idx_int_ref)
+        if args.interface_res is not None:
+            idxmap = dict(zip(trb['con_ref_pdb_idx'],trb['con_ref_idx0']))
+            idxmap2 = dict(zip(trb['con_ref_pdb_idx'],trb['con_hal_idx0']))
+            idx_int_ref = [idxmap[i] for i in interface_res if i in trb['con_ref_pdb_idx']]
+            idx_int_hal = [idxmap2[i] for i in interface_res if i in trb['con_ref_pdb_idx']]
+            L_int = len(idx_int_ref)
 
-                row['interface_rmsd_af2'] = calc_rmsd(xyz_pred[idx_int_hal].reshape(L_int*3,3), xyz_ref[idx_int_ref].reshape(L_int*3,3))
-                row['interface_rmsd_af2_des'] = calc_rmsd(xyz_pred[idx_int_hal].reshape(L_int*3,3), xyz_des[idx_int_hal].reshape(L_int*3,3))
+            row['interface_rmsd_af2'] = calc_rmsd(xyz_pred[idx_int_hal].reshape(L_int*3,3), xyz_ref[idx_int_ref].reshape(L_int*3,3))
+            row['interface_rmsd_af2_des'] = calc_rmsd(xyz_pred[idx_int_hal].reshape(L_int*3,3), xyz_des[idx_int_hal].reshape(L_int*3,3))
 
         records.append(row)
 

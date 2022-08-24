@@ -86,11 +86,12 @@ run multiple inpainting runs to sample this range, with e.g. `--num_designs 3`
 
 2. Inpainting in the presence of another, fixed chain. Sometimes, you'll want
 to inpaint in the presence of another chain, e.g. a receptor that you want to
-inpaint a binder against. This can be specified by including the receptor in
-the input pdb and including the `--receptor_chain` flag. Currently this script
-only supports one receptor chain -- if you have multiple receptor subunits you
-can put them on the same chain, with a 200-residue index gap to allow
-RosettaFold to predict them as separate chains.
+inpaint a target against. This can be specified by adding the receptor PDB indices
+as a separate block in the contig, separated by a ',0' indicating a chain break.
+E.g. if you wanted to inpaint in the presence of an 100-amino acid B chain (1-indexed),
+the contig would be `B1-100,0 A25-50,7-13,A61-79`. This will put a 200-residue
+index break into the input, which will allow the inpainting network to see this
+B chain as a separate chain.
 
 3. Fusing multiple chains. Your 'visible' parts of structure can be linked
 together with inpainting, even if they're on separate chains in the input file.

@@ -1,0 +1,7 @@
+-beta_nov16
+-in:file:silent_struct_type binary
+-in:file:silent in.silent
+-out:file:silent_struct_type binary
+-out:file:silent out.silent
+-mute protocols.rosetta_scripts.ParsedProtocol.REPORT
+-multithreading:total_threads 1

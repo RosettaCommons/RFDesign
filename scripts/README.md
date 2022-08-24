@@ -71,15 +71,6 @@ the reference structure, as well as radius of gyration, secondary structure,
 topology (i.e. HHH or HEEH).
 
 
-### Compile metrics
-
-When you have computed all metrics, you can load the resulting tables using custom code, or most of the metrics can be combined into a single file by using
-
-    ./compile_metrics.py FOLDER/trf_relax
-
-The result will be a single file `FOLDER/trf_relax/combined_metrics.csv`. 
-
-
 ### Align models in PyMOL
 
 To make a pymol session with designs aligned to reference structures on the
@@ -106,13 +97,4 @@ the receptor chain from the alignment:
 
 See code of pymol_align.py for a few more options. 
 
-
-### Legacy scripts
-
-Previously, we computed RMSD, DAN-lDDT (Deep Accuracy Net), and TM-score to
-template using this command, which is a wrapper for `pyrosetta_metrics.py`,
-`lddt.sh`, and `get_tmscores.py`. Now we use AF2 plDDT rather than DAN-lDDT, so
-this combined script isn't often used.
-
-    ./calc_metrics.sh FOLDER/trf_relax
 

@@ -1,0 +1,140 @@
+
+
+<ROSETTASCRIPTS>
+	# This is the relax script that Brian used to relax the IL7 dataset on BOINC
+    <SCOREFXNS>
+        <ScoreFunction name="sfxn" weights="beta_nov16" />
+        <ScoreFunction name="sfxn_cart" weights="beta_nov16_cart" />
+        <ScoreFunction name="vdw_sol" weights="empty" >
+            <Reweight scoretype="fa_atr" weight="1.0" />
+            <Reweight scoretype="fa_rep" weight="0.55" />
+            <Reweight scoretype="fa_sol" weight="1.0" />
+        </ScoreFunction>
+    </SCOREFXNS>
+    <TASKOPERATIONS>
+        <SelectBySASA name="PR_monomer_core" mode="sc" state="monomer" probe_radius="2.2" core_asa="15" surface_asa="15" core="0" boundary="1" surface="1" verbose="0" />
+    </TASKOPERATIONS>
+    <RESIDUE_SELECTORS>
+        <Chain name="chainA" chains="1"/>
+        <Chain name="chainB" chains="2"/>
+        <Neighborhood name="interface_chA" selector="chainB" distance="14.0" />
+        <Neighborhood name="interface_chB" selector="chainA" distance="14.0" />
+        <And name="AB_interface" selectors="interface_chA,interface_chB" />
+        <Not name="Not_interface" selector="AB_interface" />
+        <And name="actual_interface_chA" selectors="AB_interface,chainA" />
+        <And name="actual_interface_chB" selectors="AB_interface,chainB" />
+        <And name="chainB_Not_interface" selectors="Not_interface,chainB" />
+        
+        <Task name="all_cores" fixed="true" task_operations="PR_monomer_core" packable="false" designable="false"/>
+        <And name="monomer_core" selectors="all_cores,chainA" />
+        <Not name="not_monomer_core" selector="monomer_core" />
+
+        <ResidueName name="ala_gly_pro_cys" residue_name3="ALA,GLY,PRO,CYS" />
+        <Not name="not_ala_gly_pro_cys" selector="ala_gly_pro_cys" />
+
+        <ResidueName name="apolar" residue_name3="ALA,CYS,PHE,ILE,LEU,MET,THR,PRO,VAL,TRP,TYR" />
+        <Not name="polar" selector="apolar" />
+
+        <ResidueName name="water" residue_name3="HOH" />
+
+        <And name="chainB_fixed" >
+            <Or selectors="chainB_Not_interface,water" />
+        </And>
+        <And name="chainB_not_fixed" selectors="chainB">
+            <Not selector="chainB_fixed"/>
+        </And>
+
+    </RESIDUE_SELECTORS>
+    
+
+    <TASKOPERATIONS>        
+        <ProteinInterfaceDesign name="pack_long" design_chain1="0" design_chain2="0" jump="1" interface_distance_cutoff="15"/>
+        <InitializeFromCommandline name="init" />
+        <IncludeCurrent name="current" />
+        <ExtraRotamersGeneric name="ex1_ex2" ex1="1" ex2="1" />
+
+	<OperateOnResidueSubset name="restrict_to_interface" selector="Not_interface">
+            <PreventRepackingRLT/>
+        </OperateOnResidueSubset>
+
+        <OperateOnResidueSubset name="restrict_target_Not_interface" selector="chainB_fixed">
+            <PreventRepackingRLT/>
+        </OperateOnResidueSubset>
+
+    </TASKOPERATIONS>
+    <MOVERS>
+        <SwitchChainOrder name="chain1onlypre" chain_order="1" />
+        <ScoreMover name="scorepose" scorefxn="sfxn" verbose="false" />
+        <ParsedProtocol name="chain1only">
+            <Add mover="chain1onlypre" />
+            <Add mover="scorepose" />
+        </ParsedProtocol>
+        <TaskAwareMinMover name="min" scorefxn="sfxn" bb="0" chi="1" task_operations="pack_long" />
+
+        <DeleteRegionMover name="delete_polar" residue_selector="polar" rechain="false" />
+    </MOVERS>
+    <FILTERS>
+        
+	<Sasa name="interface_buried_sasa" confidence="0" />
+
+        <Ddg name="ddg"  threshold="-10" jump="1" repeats="5" repack="1" relax_mover="min" confidence="0" scorefxn="sfxn" extreme_value_removal="1" />
+
+        <Ddg name="ddg_norepack"  threshold="-10" jump="1" repeats="1" repack="0" confidence="0" scorefxn="sfxn" extreme_value_removal="0" />
+
+        <Ddg name="ddg_hydrophobic_pre"  threshold="-10" jump="1" repeats="1" repack="0" confidence="0" scorefxn="vdw_sol" />
+        <MoveBeforeFilter name="ddg_hydrophobic" mover="delete_polar" filter="ddg_hydrophobic_pre" confidence="0"/>
+
+	<ShapeComplementarity name="interface_sc" verbose="0" min_sc="0.55" write_int_area="1" write_median_dist="1" jump="1" confidence="0"/>
+        
+        ### score function monomer terms
+        <ScoreType name="total_score_MBF" scorefxn="sfxn" score_type="total_score" threshold="0" confidence="0" />
+        <MoveBeforeFilter name="total_score_monomer" mover="chain1only" filter="total_score_MBF" confidence="0" />
+        <ResidueCount name="res_count_MBF" max_residue_count="9999" confidence="0"/>
+        <MoveBeforeFilter name="res_count_monomer" mover="chain1only" filter="res_count_MBF" confidence="0" />
+
+           
+        <CalculatorFilter name="score_per_res" equation="total_score_monomer / res" threshold="-3.5" confidence="0">
+            <Var name="total_score_monomer" filter="total_score_monomer"/>
+            <Var name="res" filter="res_count_monomer"/>
+        </CalculatorFilter>
+
+
+        <ContactMolecularSurface name="contact_molecular_surface" distance_weight="0.5" target_selector="chainA" binder_selector="chainB" confidence="0" />
+
+        <SSShapeComplementarity name="ss_sc_pre" verbose="0" confidence="0" />
+        <MoveBeforeFilter name="ss_sc" mover="chain1only" filter="ss_sc_pre" confidence="0"/>
+
+        <SSShapeComplementarity name="helix_sc_pre" verbose="0" loops="0" helices="1" confidence="0" />
+        <MoveBeforeFilter name="helix_sc" mover="chain1only" filter="helix_sc_pre" confidence="0"/>
+
+	<CavityVolume name="cavity_pre" confidence="0"/>
+        <MoveBeforeFilter name="cavity" mover="chain1only" filter="cavity_pre" confidence="0"/>
+
+	<PackStat name="packstat_pre" repeats="20" confidence="0" />
+        <MoveBeforeFilter name="packstat" mover="chain1only" filter="packstat_pre" confidence="0"/>
+
+        <SSShapeComplementarity name="loop_sc_pre" verbose="0" loops="1" helices="0" confidence="0" />
+        <MoveBeforeFilter name="loop_sc" mover="chain1only" filter="loop_sc_pre" confidence="0"/>
+    </FILTERS>
+
+    <SIMPLE_METRICS>
+         <SapScoreMetric name="sap_score" score_selector="chainA" />
+    </SIMPLE_METRICS>
+
+    <MOVERS>
+
+        <TaskAwareMinMover name="minimize_interface" scorefxn="sfxn_cart" tolerance="0.01" cartesian="true" task_operations="restrict_to_interface" />
+
+    </MOVERS>
+
+    <APPLY_TO_POSE>
+    </APPLY_TO_POSE>
+    <PROTOCOLS>
+
+        <Add mover="minimize_interface" />
+        <Add filter="ddg" />
+        <Add metrics="sap_score" />
+        <Add filter="contact_molecular_surface" />
+
+    </PROTOCOLS>
+</ROSETTASCRIPTS>

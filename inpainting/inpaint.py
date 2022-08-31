@@ -92,8 +92,6 @@ def get_args():
             help='Pieces of input protein to keep ')
     parser.add_argument('--checkpoint', default=script_dir+'/weights/BFF_mix_epoch25.pt',
             help='Checkpoint to pretrained RFold module')
-    parser.add_argument('--receptor_chain', default=None,
-            help='Chain letter for receptor to model but not do inpainting on')
     parser.add_argument('--inpaint_str', type=str, default=None, nargs='+',
          help='Predict the structure at these residues. Similar mask (and window), but is specifically for structure')
     parser.add_argument('--inpaint_seq', type=str, default=None, nargs='+',

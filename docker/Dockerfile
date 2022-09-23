@@ -14,7 +14,7 @@ RUN apt-get update \
     && rm -f Miniconda3-latest-Linux-x86_64.sh \
     && conda --version
 
-RUN git clone --branch main https://github.com/RosettaCommons/RFDesign.git \
+RUN git clone --depth 1 --branch main https://github.com/RosettaCommons/RFDesign.git \
     && cd RFDesign \
     && wget -nv -P hallucination/weights/rf_Nov05 http://files.ipd.uw.edu/pub/rfdesign/weights/BFF_last.pt \
     && wget -nv -P inpainting/weights/ http://files.ipd.uw.edu/pub/rfdesign/weights/BFF_mix_epoch25.pt

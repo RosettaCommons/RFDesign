@@ -48,7 +48,7 @@ All code and neural network weights are open source under the BSD license. See `
     ./run_tests.sh
 ```
 
-    ## Running on docker
+## Running on docker
 UPDATE 2022-9-27: Tim O'Donnell generously provided a Dockerfile to make installation easier. You can try doing the following to install.
 
 A Docker image for running RFDesign on a GPU can be built and run as follows:

@@ -48,7 +48,23 @@ All code and neural network weights are open source under the BSD license. See `
     ./run_tests.sh
 ```
 
-### Dependencies
+    ## Running on docker
+UPDATE 2022-9-27: Tim O'Donnell generously provided a Dockerfile to make installation easier. You can try doing the following to install.
+
+A Docker image for running RFDesign on a GPU can be built and run as follows:
+
+```
+
+    cd docker
+
+    docker build . -t rfdesign/rfdesign:latest
+    nvidia-docker run -it rfdesign/rfdesign:latest /root/miniconda3/envs/rfdesign-cuda/bin/python RFDesign/hallucination/hallucinate.py --help
+
+``` 
+
+The resulting image will be able to run inpainting, hallucination, and the af2_metrics.py script. Functionality that relies on pyrosetta is not supported.
+    
+## Dependencies
 If you want/need to configure your environment manually, here are the packages in our environment:
 
  - python 3.8

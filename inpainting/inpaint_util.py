@@ -48,6 +48,40 @@ aa2long=[
     (" N  "," CA "," C  "," O  "," CB "," CG1"," CG2",  None,  None,  None,  None,  None,  None,  None), # val
 ]
 
+def write_pdb(filename, seq, atoms, Bfacts=None, prefix=None, chains=None):
+        L = len(seq)
+        ctr = 1
+        with open(filename, 'wt') as f:
+            for i,s in enumerate(seq):
+                if chains is None:
+                    chain='A'
+                else:
+                    chain=chains[i]
+
+                if (len(atoms.shape)==2):
+                    f.write ("%-6s%5s %4s %3s %s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f\n"%(
+                            "ATOM", ctr, " CA ", util.num2aa[s],
+                            chain, i+1, atoms[i,0], atoms[i,1], atoms[i,2],
+                            1.0, Bfacts[i] ) )
+                    ctr += 1
+
+                elif atoms.shape[1]==3:
+                    for j,atm_j in enumerate((" N  "," CA "," C  ")):
+                        f.write ("%-6s%5s %4s %3s %s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f\n"%(
+                                "ATOM", ctr, atm_j, num2aa[s],
+                                chain, i+1, atoms[i,j,0], atoms[i,j,1], atoms[i,j,2],
+                                1.0, Bfacts[i] ) )
+                        ctr += 1
+                else:
+                    atms = aa2long[s]
+                    for j,atm_j in enumerate(atms):
+                        if (atm_j is not None):
+                            f.write ("%-6s%5s %4s %3s %s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f\n"%(
+                                "ATOM", ctr, atm_j, num2aa[s],
+                                chain, i+1, atoms[i,j,0], atoms[i,j,1], atoms[i,j,2],
+                                1.0, Bfacts[i] ) )
+                            ctr += 1
+
 
 def seq2chars(seq):
     

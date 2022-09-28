@@ -14,8 +14,9 @@ import math
 
 # inpainting associated things
 import inf_methods
-from inpaint_util import get_translated_coords, get_tied_translated_coords, translate_coords, parse_block_rotate, rotate_block
+from inpaint_util import get_translated_coords, get_tied_translated_coords, translate_coords, parse_block_rotate, rotate_block, write_pdb
 import pred_util
+from contigs import ContigMap, get_mappings
 import parsers
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -90,6 +91,8 @@ def get_args():
             help='input protein')
     parser.add_argument('--contigs', default=None, nargs='+',
             help='Pieces of input protein to keep ')
+    parser.add_argument('--length',default=None,type=str,
+            help='Specify length, or length range, you want the outputs. e.g. 100 or 95-105')
     parser.add_argument('--checkpoint', default=script_dir+'/weights/BFF_mix_epoch25.pt',
             help='Checkpoint to pretrained RFold module')
     parser.add_argument('--inpaint_str', type=str, default=None, nargs='+',
@@ -198,36 +201,6 @@ def MSAFeaturize_fixbb_inference(seq, params):
 
     return b_seq, b_msa_clust, b_msa_seed, b_msa_extra, b_mask_pos
 
-
-
-def get_masked_inputs(mask_str, seq, xyz_t, args, mask_seq=None, already_masked=True, tmpl_conf=1.):
-    """
-    Generate the final set of masked inputs 
-    """
-    # TODO: The `already_masked` flag is a hack to keep main neat. Main function needs to be fixed
-    
-    msa       = seq[None,...].clone()
-    msa_extra = seq[None,...].clone()
-
-    conf_1d = torch.ones_like(seq)*tmpl_conf
-
-    if mask_seq == None:
-        mask_seq = mask_str
-
-    # do hallucination/inpainting preprocessing (combo of des + str)
-    
-    if not already_masked:
-        # sequence info
-        seq[~mask_seq] = 20
-        # str info 
-        xyz_t[:,:,~mask_str] = float('nan')
-
-    # 1d confidence info
-    conf_1d[~mask_str] = 0 # zero confidence for places where structure is masked 
-
-
-    return seq, xyz_t, conf_1d
-
  
 def main():
 
@@ -297,7 +270,6 @@ def main():
         process_args(args)
         dump_args(args)
         
-        print('args before design')
         ic(args)
 
         for i_des in range(args.num_designs):
@@ -305,9 +277,10 @@ def main():
         
             # process contigs and generate masks
             ic(args.contigs)
-            rm,mappings = pred_util.get_residue_map(args, parsed_pdb)
-            mask_str = torch.from_numpy(~rm.inpaint_str)
-            mask_seq = torch.from_numpy(~rm.inpaint_seq)
+            rm = ContigMap(parsed_pdb, args.contigs, args.inpaint_seq, args.inpaint_str, args.length)
+            mappings = get_mappings(rm)
+            mask_str = torch.from_numpy(rm.inpaint_str)[None,:]
+            mask_seq = torch.from_numpy(rm.inpaint_seq)[None,:]
             
             # get raw inputs before remapping 
             if args.res_translate is not None or args.tie_translate is not None:
@@ -321,30 +294,25 @@ def main():
             seq = torch.from_numpy(parsed_pdb['seq'])
             
             # scatter/map the residues according to the contigs   
-            if args.contigs is not None:
-                xyz_t    = rm.scatter_1d(xyz_true[:,:3].clone(), np.nan, feature='str')[None,None,...]  # (1,1,L,3,3)
-                seq      = rm.scatter_1d(seq, 20, feature='seq')                                        # (L,)
-            
-            # get raw inputs (not one hot yet)
-            if args.inpaint_seq is not None or args.inpaint_str is not None:
-                already_masked = False
-            else:
-                already_masked = True  # NOTE: Using this boolean flag is really hacky
-                                   #       probably get better logic soon
-            
-            if "-" in args.tmpl_conf: #give confidence range for diversity
-                tmpl_conf = random.uniform(float(args.tmpl_conf.split("-")[0]), float(args.tmpl_conf.split("-")[1]))
-            else:
-                tmpl_conf = float(args.tmpl_conf)
+            xyz_t = torch.full((1,1,len(rm.ref),3,3), np.nan)
+            xyz_t[:,:,rm.hal_idx0,:,:] = xyz_true[rm.ref_idx0,:,:][None, None,...]
+            seq_t = torch.full((1,len(rm.ref)),20).squeeze()
+            seq_t[rm.hal_idx0] = seq[rm.ref_idx0]
+            seq=seq_t
+            # template confidence
+            conf_1d = torch.ones_like(seq)*float(args.tmpl_conf)
+            conf_1d[~mask_str[0]] = 0 # zero confidence for places where structure is masked
 
-            seq, xyz_t, conf_1d = get_masked_inputs(mask_str, seq, xyz_t, args, mask_seq=mask_seq, already_masked=already_masked, tmpl_conf=tmpl_conf)
-            
+            # mask sequence and structure
+            seq[~mask_seq[0]] = 20 
+            xyz_t[:,:,~mask_str[0]] = float('nan') 
+
             # get one-hot versions of the sequence-associated tensors 
             seq_hot, msa, msa_hot, msa_extra_hot, _ = MSAFeaturize_fixbb_inference(seq, params=design_params) 
 
             # get template featurees 
-            f1d_t = TemplFeaturizeFixbb(seq, conf_1d=conf_1d)
-            idx_pdb = torch.from_numpy(rm.idx_rf).int()
+            t1d = TemplFeaturizeFixbb(seq, conf_1d=conf_1d)
+            idx_pdb = torch.from_numpy(np.array(rm.rf)).int()
             t2d   = xyz_to_t2d(xyz_t)
             
             # mask out angles in 'floating points' from t2d input
@@ -383,20 +351,21 @@ def main():
             msa_hot = msa_hot.to(DEVICE).float().unsqueeze(0)
             msa_extra_hot = msa_extra_hot.to(DEVICE).float().unsqueeze(0)
             xyz_t   = xyz_t.to(DEVICE).float().unsqueeze(0)
-            f1d_t   = f1d_t.to(DEVICE).float()[None,None]
+            t1d = t1d.to(DEVICE).float()[None,None]
             t2d     = t2d.to(DEVICE)
             idx_pdb = idx_pdb.to(DEVICE).unsqueeze(0)
             
 
             ### run inference ###     
             with torch.no_grad():
-                out  = inf_method(model, msa_hot, msa_extra_hot, seq, f1d_t, t2d, idx_pdb, design_params['MAXCYCLE'])
+                out  = inf_method(model, msa_hot, msa_extra_hot, seq, t1d, t2d, idx_pdb, design_params['MAXCYCLE'])
                 logit_c6d, logit_aa, pred_crds, pred_lddts, seq_out = out # unpack 
-                lddt = pred_lddts.squeeze().cpu().numpy()
+
+            lddt = pred_lddts.squeeze().cpu().numpy()
+            atoms_out = pred_crds[-1].squeeze()
 
 
-            
-            strmasktemp = mask_str.cpu().numpy()
+            strmasktemp = mask_str.squeeze().cpu().numpy()
             partial_lddt = [lddt[i] for i in range(np.shape(strmasktemp)[0]) if strmasktemp[i] == 0]
             trb = {}
             trb['lddt'] = lddt
@@ -443,10 +412,9 @@ def main():
             if args.dump_pdb:
                 out_prefix = f'{args.out}_{i_des}'
                 fname = out_prefix + '.pdb'
+                chain_ids = [i[0] for i in rm.hal]
                 
-                chain_ids = rm.df['hal_pdb_ch'].values
-                
-                util.writepdb(fname, atoms_out, mask_str.int(), seq_out.squeeze(), backbone_only=True, chain_ids=chain_ids)
+                write_pdb(fname, seq_out.squeeze(), atoms_out, Bfacts=lddt, chains=chain_ids)
                 '''
                 with open(f'{args.out}_{i_des}.out','w') as f:
                     f.write(f'{str(np.mean(lddt))},{str(partial_lddt)}')

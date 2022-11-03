@@ -147,5 +147,28 @@ def parse_fasta(filename):
             if not name: break
 
             out[name] = seq
+            
+            
+def parse_pdb_mutation_effect(filename):
+    # given a path to the .pdb file the functions returns
+    # xyz of shape [3,num_residues,3] where [atoms NCaC, num_residues, xyz coords]
+    # idx is the residue index in the pdb file [num_residues]
+
+    lines = open(filename,'r').readlines()
+
+    N  = np.array([[float(l[30:38]), float(l[38:46]), float(l[46:54])]
+                    for l in lines if l[:4]=="ATOM" and l[12:16].strip()=="N"])
+    Ca = np.array([[float(l[30:38]), float(l[38:46]), float(l[46:54])]
+                    for l in lines if l[:4]=="ATOM" and l[12:16].strip()=="CA"])
+    C  = np.array([[float(l[30:38]), float(l[38:46]), float(l[46:54])]
+                    for l in lines if l[:4]=="ATOM" and l[12:16].strip()=="C"])
+
+    xyz = np.stack([N,Ca,C], axis=0)
+
+    idx = np.array([int(l[22:26]) for l in lines if l[:4]=="ATOM" and l[12:16].strip()=="CA"])
+
+    return xyz,idx
+
+
 
     return out

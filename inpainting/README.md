@@ -176,12 +176,15 @@ usage: python rfjoint_mutation_effect_prediction.py -msa input_msa.a3m -out_dir 
 
 For evaluation: 
     output numpy file is of shape Lx21 (20 amino acids + gap). The effect of a mutation at position i is calculated as: 
+    
         alphabet = 'ARNDCQEGHILKMFPSTWYV-'
+        
         wt_aa = alphabet.index('A') # wild type amino acid at position i
+        
         mt_aa = alphabet.index('P') # mutated amino acid at position i
+        
         y_hat = pred[i][mt_aa] - pred[i][wt_aa]  # predicted effect of mutating A to P (if positive, predicted to be beneficial, if negative, predicted to be deleterios) 
         
-
 
 ## FAQs
 

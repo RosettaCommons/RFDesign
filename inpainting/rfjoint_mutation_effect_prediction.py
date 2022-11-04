@@ -34,7 +34,7 @@ MODEL_PARAM = {'SE3_param': {'div': 4,
                   'p_drop': 0.15}
 
 class Predictor():
-    def __init__(self, use_cpu=False, checkpoint=None,params={'MAXLAT': 256, 'MAXSEQ': 1024}):
+    def __init__(self, use_cpu=False, checkpoint=None,params={'NCYCLES':1,'MAXLAT': 256, 'MAXSEQ': 1024}):
         if torch.cuda.is_available() and (not use_cpu):
             self.device = torch.device("cuda:0")
         else:
@@ -86,6 +86,7 @@ class Predictor():
         with torch.no_grad():
             self.model.eval()
             for i in range(msa_start.shape[1]): # go through every amino acid
+                ## preprocessing 
                 N , L = msa_start.shape[0], msa_start.shape[1]
                 msa_mut = msa_start.clone()
                 msa_mut[0,i] = 21
@@ -111,15 +112,35 @@ class Predictor():
                 t2d     = t2d.to(self.device)
                 idx_pdb = idx_orig.to(self.device)
                 mut_seq = mut_seq.to(self.device)
-                logits, logits_aa, xyz, lddt = self.model(msa_latent=msa_hot, 
-                                                         msa_full=msa_extra_hot, 
-                                                         seq=mut_seq, 
-                                                         idx=idx_pdb, t1d=f1d_t, 
-                                                         t2d=t2d,use_checkpoint=True)
+                
+                # recycling 
+                msa_prev =None 
+                pair_prev = None 
+                xyz_prev = None
+                for recycle in range (self.params['NCYCLES']-1):
+                    #print('recycle: %s' %(recycle))
+                    msa_prev, pair_prev, xyz_prev = self.model(msa_latent=msa_hot, 
+                                                               msa_full=msa_extra_hot,
+                                                               seq=mut_seq,
+                                                               idx=idx_pdb, t1d=f1d_t,
+                                                               t2d=t2d,msa_prev=msa_prev,
+                                                               pair_prev=pair_prev,xyz_prev=xyz_prev,
+                                                               use_checkpoint=True,return_raw=True)
 
+
+                
+                logits, logits_aa, xyz, lddt = self.model(msa_latent=msa_hot, 
+                                                               msa_full=msa_extra_hot,
+                                                               seq=mut_seq,
+                                                               idx=idx_pdb, t1d=f1d_t,
+                                                               t2d=t2d,msa_prev=msa_prev,
+                                                               pair_prev=pair_prev,xyz_prev=xyz_prev,
+                                                               use_checkpoint=True)
 
                 logit_aa_s = logits_aa.reshape(-1, N, L).permute(1,2,0)
                 logit_aa_s = nn.LogSoftmax(dim=-1)(logit_aa_s) # log probabilities
+                zero_shot_prediction[i] = logit_aa_s[0][i].cpu().detach()
+                
                 zero_shot_prediction[i] = logit_aa_s[0][i].cpu().detach()
 
         print('Done with mutation effect prediction, saving as: %s/%s'%(out_dir,out_name),flush=True) 
@@ -141,6 +162,8 @@ def get_args():
     parser.add_argument("--cpu", dest='use_cpu', default=False, action='store_true', help="Force to use CPU instead of GPU [False]")
     parser.add_argument("-n_seed", default=256,
                         help="Number of seed sequences [256]")
+    parser.add_argument("-n_recycle", default=1,
+                        help="Number of recycles [1]")
     parser.add_argument("-n_extra", default=1024,
                         help="Number of extra sequences [1024]")
     parser.add_argument('--checkpoint',dest='checkpoint', default=script_dir+'/weights/BFF_mix_epoch25.pt',
@@ -148,6 +171,7 @@ def get_args():
     args = parser.parse_args()
     print(args,flush=True)
     params = {}
+    params['NCYCLES'] = int(args.n_recycle)
     params['MAXLAT'] = int(args.n_seed)
     params['MAXSEQ'] = int(args.n_extra)
     return args, params

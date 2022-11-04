@@ -54,12 +54,14 @@ class Predictor():
             p.requires_grad = False
 
     def predict(self,a3m_fn,out_dir,out_name='rfjoint_mut_pred',templ_fn=None):
+        shallow_msa = False # to keep track of msa depth, if shallow len(msa) < maxlat 
         # msa processing 
         msa_orig = parse_a3m(a3m_fn)['msa']
         if (len(msa_orig) > self.params['MAXLAT']):
             msa_start = msa_orig[:self.params['MAXLAT']]
             msa_end = msa_orig[self.params['MAXLAT']:self.params['MAXLAT']+self.params['MAXSEQ']]
         if (len(msa_orig) <= self.params['MAXLAT']): 
+            shallow_msa = True
             msa_start = msa_orig[:self.params['MAXLAT']]
             msa_end = msa_orig[:self.params['MAXLAT']]
 
@@ -90,6 +92,7 @@ class Predictor():
                 msa_start_onehot = torch.nn.functional.one_hot(msa_mut.clone().to(torch.int64), num_classes=22)
                 fake_ins = torch.zeros_like(msa_start_onehot)[:,:,:2]
                 msa_start_onehot_cat = torch.cat([msa_start_onehot, msa_start_onehot, fake_ins], dim=-1)
+                if(shallow_msa): msa_end[0,i] = 21
                 msa_end_onehot = torch.nn.functional.one_hot(torch.Tensor(msa_end).clone().to(torch.int64), num_classes=22)
                 fake_ins = torch.zeros_like(msa_end_onehot)[:,:,:1]
                 msa_end_onehot_cat = torch.cat([msa_end_onehot ,fake_ins], dim=-1)[None]
@@ -153,5 +156,3 @@ if __name__ == "__main__":
     args, params = get_args()
     pred = Predictor(use_cpu=args.use_cpu,checkpoint=args.checkpoint,params=params)
     pred.predict(args.a3m_fn,args.out_dir,args.out_name,args.templ_fn,)
-
-

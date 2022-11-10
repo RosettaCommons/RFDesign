@@ -37,7 +37,6 @@ from alphafold.data import templates
 from alphafold.model import data
 from alphafold.model import config
 from alphafold.model import model
-from alphafold.relax import relax
 
 from jax.lib import xla_bridge
 from alphafold.model.tf import shape_placeholders                                                        
@@ -69,7 +68,6 @@ def get_args(argv=None):
     p.add_argument('--model_num', default=4, type=int, choices=[1,2,3,4,5], help='AlphaFold model to use')
     p.add_argument('--use_ptm', default=False, action="store_true", help='Use ptm model variant')
     p.add_argument('--num_recycle', default=3, type=int, help='Number of recycles for AlphaFold prediction')
-    p.add_argument('--amber_relax', action="store_true", help='Do AMBER relax after AF2 prediction.')
 
 
     if argv is not None:
@@ -322,17 +320,6 @@ def main():
                 b_factors=np.zeros_like(outputs['structure_module']['final_atom_mask'])
             )
             pdb_lines = protein.to_pdb(unrelaxed_protein)
-
-            # relax, if wanted
-            if args.amber_relax:
-                amber_relaxer = relax.AmberRelaxation(
-                    max_iterations=0,
-                    tolerance=2.39,
-                    stiffness=10.0,
-                    exclude_residues=[],
-                    max_outer_iterations=20
-                )
-                pdb_lines, _, _ = amber_relaxer.process(prot=unrelaxed_protein)
 
             # save AF2 pdb
             with open(os.path.join(args.outdir,name+'.pdb'), 'w') as f:

@@ -1,0 +1,30 @@
+version: 2.1
+jobs:
+  build:
+    machine:
+      image: ubuntu-2004:202104-01
+      docker_layer_caching: true
+
+    steps:
+      - run:
+          name: "Install pybiolib"
+          command: pip3 install pybiolib
+
+      - checkout
+
+      - run:
+          name: "Build Docker Image"
+          command: docker build -t RFDesign . -f docker/Dockerfile
+          environment:
+            -  DOCKER_BUILDKIT=1
+
+      - run:
+          name : biolib push RFDesign
+          command: biolib push DTU_Bioengineering/RFDesign
+
+workflows:
+  build:
+    jobs:
+      - build:
+          context:
+            - BIOLIB_TOKEN

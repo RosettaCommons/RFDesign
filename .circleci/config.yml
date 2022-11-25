@@ -16,7 +16,7 @@ jobs:
           name: "Build Docker Image"
           command: docker build -t RFDesign . -f docker/Dockerfile
           environment:
-            -  DOCKER_BUILDKIT=1
+            DOCKER_BUILDKIT: 1
 
       - run:
           name : biolib push RFDesign

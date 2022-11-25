@@ -1,0 +1,12 @@
+biolib_version: 2
+modules:
+  main:
+    image: 'local-docker://rfdesign:latest'
+    command: 'python3 hallucination/hallucinate.py'
+    input_files:
+      - COPY / /
+    output_files: 
+      - COPY /output/ /
+    default_machine: 'gpu.small'
+    
+arguments: []

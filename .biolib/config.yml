@@ -2,7 +2,7 @@ biolib_version: 2
 modules:
   main:
     image: 'local-docker://rfdesign:latest'
-    command: 'python3 /root/RFDesign/hallucination/hallucinate.py'
+    command: 'bash /root/RFDesign/biolib_run.sh'
     input_files:
       - COPY / /
     output_files: 

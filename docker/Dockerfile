@@ -64,4 +64,4 @@ RUN /root/miniconda3/envs/rfdesign-cuda/bin/pip install \
         tensorflow-gpu==2.9.0 \
         biopython==1.79 \
     && conda clean -afy
-COPY biolib_run.sh biolib_run.sh
+COPY biolib_run.sh RFDesign/biolib_run.sh

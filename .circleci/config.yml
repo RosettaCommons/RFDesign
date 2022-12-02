@@ -20,7 +20,7 @@ jobs:
 
       - run:
           name : biolib push rfdesign
-          command: biolib DTU-Bioengineering/RFDesign
+          command: biolib push DTU-Bioengineering/RFDesign
 
 workflows:
   build:

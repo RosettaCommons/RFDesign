@@ -9,4 +9,39 @@ modules:
       - COPY /output/ /
     default_machine: 'gpu.small'
     
-arguments: []
+arguments:
+    -
+        default_value: RFDesign/tutorials/halluc_PD-L1_binder/input/pd1.pdb
+        description: 'Enter PDB to scaffold'
+        key: '--pdb'
+        key_value_separator: '='
+        required: false
+        type: file
+    -
+        default_value: RFDesign/tutorials/halluc_PD-L1_binder/input/pdl1.pdb
+        description: 'Enter target PDB'
+        key: '--rep_pdb'
+        key_value_separator: ' '
+        required: false
+        type: file
+    -
+        default_value: 25-35,A63-82,15-25,A119-140,0-15
+        description: 'Enter a mask'
+        key: '--mask'
+        key_value_separator: '='
+        required: false
+        type: text
+    -
+        default_value: g20
+        description: 'Enter amount of steps (prepend with g for grad descent or m for mcmc)'
+        key: '--steps'
+        key_value_separator: '='
+        required: false
+        type: text
+    -
+        default_value: 2
+        description: 'Enter amount of proteins to design'
+        key: '--num'
+        key_value_separator: '='
+        required: false
+        type: number

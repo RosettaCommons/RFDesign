@@ -23,12 +23,12 @@ RUN git clone --depth 1 --branch main https://github.com/RosettaCommons/RFDesign
 # AlphaFold is used to evaluate the rfdesign results.
 # The /software/mlfold stuff is a hack because the rfdesign af2_metrics.py
 # script has that path hardcoded.
-RUN mkdir -p alphafold-params \
-    && wget -nv https://storage.googleapis.com/alphafold/alphafold_params_2022-03-02.tar -O params.tar \
-    && tar --extract --verbose --file=params.tar --directory=alphafold-params --preserve-permissions \
-    && rm -f params.tar \
-    && mkdir -p /software/mlfold/alphafold-data \
-    && ln -s /root/alphafold-params /software/mlfold/alphafold-data/params
+# RUN mkdir -p alphafold-params \
+#     && wget -nv https://storage.googleapis.com/alphafold/alphafold_params_2022-03-02.tar -O params.tar \
+#     && tar --extract --verbose --file=params.tar --directory=alphafold-params --preserve-permissions \
+#     && rm -f params.tar \
+#     && mkdir -p /software/mlfold/alphafold-data \
+#     && ln -s /root/alphafold-params /software/mlfold/alphafold-data/params
 
 RUN conda update -n base -c defaults conda \
   && conda config --set ssl_verify no \
@@ -70,12 +70,12 @@ RUN /root/miniconda3/envs/rfdesign-cuda/bin/pip install \
 ENV PATH="/opt/conda/bin:$PATH"
 SHELL ["conda", "run", "-n", "rfdesign-cuda", "/bin/bash", "-c"]
 
-COPY params /software/mlfold/alphafold-data/params
+# COPY params /software/mlfold/alphafold-data/params
 
-COPY PyRosetta4.Release.python38.linux.release-336.tar.bz2 .
-RUN tar -xjf PyRosetta4.Release.python38.linux.release-336.tar.bz2
-RUN pip install -e PyRosetta4.Release.python38.linux.release-336/setup
-RUN rm PyRosetta4.Release.python38.linux.release-336.tar.bz2
+# COPY PyRosetta4.Release.python38.linux.release-336.tar.bz2 .
+# RUN tar -xjf PyRosetta4.Release.python38.linux.release-336.tar.bz2
+# RUN pip install -e PyRosetta4.Release.python38.linux.release-336/setup
+# RUN rm PyRosetta4.Release.python38.linux.release-336.tar.bz2
 
 RUN pip install pandas
 

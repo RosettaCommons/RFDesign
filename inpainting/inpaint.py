@@ -427,7 +427,9 @@ def main():
                 with open(f'{args.out}_{i_des}_translated_coords.json', "w") as outfile:
                     json.dump(translate_dict, outfile)
             '''
-    sys.exit('Successfully wrote output')
+
+    print('Successfully wrote output')
+    sys.exit(0)
         
 
     

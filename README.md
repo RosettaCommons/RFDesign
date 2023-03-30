@@ -10,6 +10,9 @@ described in [our
 preprint](https://www.biorxiv.org/content/10.1101/2021.11.10.468128v2). Code
 for postprocessing and analysis scripts included in `scripts/`.
 
+## OBSOLETE: Use RFDiffusion instead
+
+Every use case of the hallucination and inpainting code in this repository (and beyond) can be performed by RFDiffusion, more quickly and with higher-quality results. Please see the [RFDiffusion Github repository](https://github.com/RosettaCommons/RFdiffusion) and use that instead of this. We will be discontinuing support for this code (unless you are trying to use it for something very specific and strange, in which case contact us directly by email).
 
 ## License
 
